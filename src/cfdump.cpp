@@ -10,413 +10,6 @@ static_assert(std::numeric_limits<float>::is_iec559);
 static_assert(std::numeric_limits<double>::is_iec559);
 
 
-class ConstantPoolMember {
-public:
-    size_t byteOffsetFromClassFile;
-    
-    virtual int NumberOfCPEntriesTaken() const {return 1;}
-    //At Tag Byte
-    static ConstantPoolMember* GetConstantPoolMember(std::istream& istr, const std::streampos& cf_offset, int* number_of_cp_entries_taken);
-    
-    //Past Tag Byte
-    virtual void LoadFromStream(std::istream& istr) = 0;
-    virtual int GetIndexOfTag() const = 0;
-    virtual const char* GetTag() const = 0; 
-
-    virtual void OutputDataRaw(std::ostream&, const char* prefix = "") = 0;    
-};
-class Utf8_info : public ConstantPoolMember {
-public:
-    const int index = 1;
-    const char* tag = "Utf8_info";
-    int GetIndexOfTag() const override {return index;}
-    const char* GetTag() const override {return tag;}
-    Utf8_info(std::istream& istr){LoadFromStream(istr);}
-    ~Utf8_info() {if(data != nullptr){delete data;}}
-
-    uint16_t length;
-    uint8_t* data;
-    void LoadFromStream(std::istream& istr) override {
-        length = GetNextU16(istr);
-        data = new uint8_t[length];
-        for(int i = 0; i < length; i++){
-            data[i] = GetNextU8(istr);
-        }
-    }
-
-    void OutputDataRaw(std::ostream& ostr, const char* prefix = "") override {
-        ostr<<prefix<<"Length: "<<length;
-        //This Should Work For Ascii and some of the BMP, But Will Break Horribly In Extended Unicode
-        ostr<<prefix<<"MUTF-8: ";
-        for(int i = 0; i < length; i++){
-            ostr<<(unsigned char)data[i];
-        }
-    }
-};
-class Integer_info : public ConstantPoolMember {
-public:
-    const int index = 3;
-    const char* tag = "Integer_info";
-    int GetIndexOfTag() const override {return index;}
-    const char* GetTag() const override {return tag;}
-    Integer_info(std::istream& istr){LoadFromStream(istr);}
-
-    int32_t value;
-    void LoadFromStream(std::istream& istr) override {
-        static_assert(sizeof(int32_t) <= sizeof(uint32_t));
-        uint32_t i = GetNextU32(istr);
-        memcpy(&value, &i, sizeof(int32_t));
-    }
-
-    void OutputDataRaw(std::ostream& ostr, const char* prefix = "") override {
-        ostr<<prefix<<"Value: "<<value;
-    }
-};
-class Float_info : public ConstantPoolMember {
-public:
-    const int index = 4;
-    const char* tag = "Float_info";
-    int GetIndexOfTag() const override {return index;}
-    const char* GetTag() const override {return tag;}
-    Float_info(std::istream& istr){LoadFromStream(istr);}
-    
-    float value;
-    void LoadFromStream(std::istream& istr) override {
-        static_assert(sizeof(float) <= sizeof(uint32_t));
-        uint32_t i = GetNextU32(istr);
-        memcpy(&i, &value, sizeof(float));
-    }
-    
-    void OutputDataRaw(std::ostream& ostr, const char* prefix = "") override {
-        ostr<<prefix<<"Value: "<<value;
-    }
-};
-class Long_info : public ConstantPoolMember {
-public:
-    const int index = 5;
-    const char* tag = "Long_info";
-    int GetIndexOfTag() const override {return index;}
-    const char* GetTag() const override {return tag;}
-    Long_info(std::istream& istr){LoadFromStream(istr);}
-    
-    int64_t value;
-    void LoadFromStream(std::istream& istr) override {
-        static_assert(sizeof(int64_t) <= sizeof(uint64_t));
-        uint64_t i = GetNextU64(istr);
-        memcpy(&value, &i, sizeof(int64_t));
-    }
-
-    void OutputDataRaw(std::ostream& ostr, const char* prefix = "") override {
-        ostr<<prefix<<"Value: "<<value;
-    }
-
-    int NumberOfCPEntriesTaken() const override {return 2;}
-};
-class Double_info : public ConstantPoolMember {
-public:
-    const int index = 6;
-    const char* tag = "Double_info";
-    int GetIndexOfTag() const override {return index;}
-    const char* GetTag() const override {return tag;}
-    Double_info(std::istream& istr){LoadFromStream(istr);}
-    
-    double value;
-    void LoadFromStream(std::istream& istr) override {
-        uint64_t i = GetNextU64(istr);
-        static_assert(sizeof(double) <= sizeof(uint64_t));
-        memcpy(&value, &i, sizeof(double));
-    }
-
-    void OutputDataRaw(std::ostream& ostr, const char* prefix = "") override {
-        ostr<<prefix<<"Value: "<<value;
-    }
-
-    int NumberOfCPEntriesTaken() const override {return 2;}
-};
-class Class_info : public ConstantPoolMember {
-public:
-    const int index = 7;
-    const char* tag = "Class_info";
-    int GetIndexOfTag() const override {return index;}
-    const char* GetTag() const override {return tag;}
-    Class_info(std::istream& istr){LoadFromStream(istr);}
-
-    uint16_t name_index;
-    void LoadFromStream(std::istream& istr) override {
-        name_index = GetNextU16(istr);
-    }
-
-    void OutputDataRaw(std::ostream& ostr, const char* prefix = "") override {
-        ostr<<prefix<<"Name Index: "<<name_index;
-    }
-};
-class String_info : public ConstantPoolMember {
-public:
-    const int index = 8;
-    const char* tag = "String_info";
-    int GetIndexOfTag() const override {return index;}
-    const char* GetTag() const override {return tag;}
-    String_info(std::istream& istr){LoadFromStream(istr);}
-    
-    uint16_t string_index;
-    void LoadFromStream(std::istream& istr) override {
-        string_index = GetNextU16(istr);
-    }
-
-    void OutputDataRaw(std::ostream& ostr, const char* prefix = "") override {
-        ostr<<prefix<<"String Index: "<<string_index;
-    }
-};
-class Fieldref_info : public ConstantPoolMember {
-public:
-    const int index = 9;
-    const char* tag = "Fieldref_info";
-    int GetIndexOfTag() const override {return index;}
-    const char* GetTag() const override {return tag;}
-    Fieldref_info(std::istream& istr){LoadFromStream(istr);}
-
-    uint16_t class_index;
-    uint16_t nameandtype_index;
-    void LoadFromStream(std::istream& istr) override {
-        class_index = GetNextU16(istr);
-        nameandtype_index = GetNextU16(istr);
-    }
-
-    void OutputDataRaw(std::ostream& ostr, const char* prefix = "") override {
-        ostr<<prefix<<"Class Index: "<<class_index;
-        ostr<<prefix<<"NameAndType Index: "<<nameandtype_index;
-    }
-};
-class Methodref_info : public ConstantPoolMember {
-public:
-    const int index = 10;
-    const char* tag = "Methodref_info";
-    int GetIndexOfTag() const override {return index;}
-    const char* GetTag() const override {return tag;}
-    Methodref_info(std::istream& istr){LoadFromStream(istr);}
-    
-    uint16_t class_index;
-    uint16_t nameandtype_index;
-    void LoadFromStream(std::istream& istr) override {
-        class_index = GetNextU16(istr);
-        nameandtype_index = GetNextU16(istr);
-    }
-
-    void OutputDataRaw(std::ostream& ostr, const char* prefix = "") override {
-        ostr<<prefix<<"Class Index: "<<class_index;
-        ostr<<prefix<<"NameAndType Index: "<<nameandtype_index;
-    }
-};
-class InterfaceMethodref_info : public ConstantPoolMember {
-public:
-    const int index = 11;
-    const char* tag = "InterfaceMethodref_info";
-    int GetIndexOfTag() const override {return index;}
-    const char* GetTag() const override {return tag;}
-    InterfaceMethodref_info(std::istream& istr){LoadFromStream(istr);}
-    
-    uint16_t class_index;
-    uint16_t nameandtype_index;
-    void LoadFromStream(std::istream& istr) override {
-        class_index = GetNextU16(istr);
-        nameandtype_index = GetNextU16(istr);
-    }
-
-    void OutputDataRaw(std::ostream& ostr, const char* prefix = "") override {
-        ostr<<prefix<<"Class Index: "<<class_index;
-        ostr<<prefix<<"NameAndType Index: "<<nameandtype_index;
-    }
-};
-class NameAndType_info : public ConstantPoolMember {
-public:
-    const int index = 12;
-    const char* tag = "NameAndType_info";
-    int GetIndexOfTag() const override {return index;}
-    const char* GetTag() const override {return tag;}
-    NameAndType_info(std::istream& istr){LoadFromStream(istr);}
-    
-    uint16_t name_index;
-    uint16_t descriptor_index;
-    void LoadFromStream(std::istream& istr) override {
-        name_index = GetNextU16(istr);
-        descriptor_index = GetNextU16(istr);
-    }
-
-    void OutputDataRaw(std::ostream& ostr, const char* prefix = "") override {
-        ostr<<prefix<<"Name Index: "<<name_index;
-        ostr<<prefix<<"Descriptor Index: "<<descriptor_index;
-    }
-};
-class MethodHandle_info : public ConstantPoolMember {
-public:
-    const int index = 15;
-    const char* tag = "MethodHandle_info";
-    int GetIndexOfTag() const override {return index;}
-    const char* GetTag() const override {return tag;}
-    MethodHandle_info(std::istream& istr){LoadFromStream(istr);}
-    
-    uint8_t reference_kind;
-    uint16_t reference_index;
-    void LoadFromStream(std::istream& istr) override {
-        reference_kind = GetNextU8(istr);
-        reference_index = GetNextU16(istr);
-    }
-
-    void OutputDataRaw(std::ostream& ostr, const char* prefix = "") override {
-        ostr<<prefix<<"Reference Kind: "<<(unsigned int)reference_kind;
-        ostr<<prefix<<"Reference Index: "<<reference_index;
-    }
-};
-class MethodType_info : public ConstantPoolMember {
-public:
-    const int index = 16;
-    const char* tag = "MethodType_info";
-    int GetIndexOfTag() const override {return index;}
-    const char* GetTag() const override {return tag;}
-    MethodType_info(std::istream& istr){LoadFromStream(istr);}
-    
-    uint16_t descriptor_index;
-    void LoadFromStream(std::istream& istr) override {
-        descriptor_index = GetNextU16(istr);
-    }
-
-    void OutputDataRaw(std::ostream& ostr, const char* prefix = "") override {
-        ostr<<prefix<<"Descriptor Index: "<<descriptor_index;
-    }
-};
-class Dynamic_info : public ConstantPoolMember {
-public:
-    const int index = 17;
-    const char* tag = "Dynamic_info";
-    int GetIndexOfTag() const override {return index;}
-    const char* GetTag() const override {return tag;}
-    Dynamic_info(std::istream& istr){LoadFromStream(istr);}
-    
-    uint16_t bootstrap_method_attr_index;
-    uint16_t nameandtype_index;
-    void LoadFromStream(std::istream& istr) override {
-        bootstrap_method_attr_index = GetNextU16(istr);
-        nameandtype_index = GetNextU16(istr);
-    }
-
-    void OutputDataRaw(std::ostream& ostr, const char* prefix = "") override {
-        ostr<<prefix<<"Bootstrap Method Attr Index: "<<bootstrap_method_attr_index;
-        ostr<<prefix<<"NameAndType Index: "<<nameandtype_index;
-    }
-};
-class InvokeDynamic_info : public ConstantPoolMember {
-public:
-    const int index = 18;
-    const char* tag = "InvokeDynamic_info";
-    int GetIndexOfTag() const override {return index;}
-    const char* GetTag() const override {return tag;}
-    InvokeDynamic_info(std::istream& istr){LoadFromStream(istr);}
-    
-    uint16_t bootstrap_method_attr_index;
-    uint16_t nameandtype_index;
-    void LoadFromStream(std::istream& istr) override {
-        bootstrap_method_attr_index = GetNextU16(istr);
-        nameandtype_index = GetNextU16(istr);
-    }
-
-    void OutputDataRaw(std::ostream& ostr, const char* prefix = "") override {
-        ostr<<prefix<<"Bootstrap Method Attr Index: "<<bootstrap_method_attr_index;
-        ostr<<prefix<<"NameAndType Index: "<<nameandtype_index;
-    }
-};
-class Module_info : public ConstantPoolMember {
-public:
-    const int index = 19;
-    const char* tag = "Module_info";
-    int GetIndexOfTag() const override {return index;}
-    const char* GetTag() const override {return tag;}
-    Module_info(std::istream& istr){LoadFromStream(istr);}
-    
-    uint16_t name_index;
-    void LoadFromStream(std::istream& istr) override {
-        name_index = GetNextU16(istr);
-    }
-
-    void OutputDataRaw(std::ostream& ostr, const char* prefix = "") override {
-        ostr<<prefix<<"Name Index: "<<name_index;
-    }
-};
-class Package_info : public ConstantPoolMember {
-public:
-    const int index = 20;
-    const char* tag = "Package_info";
-    int GetIndexOfTag() const override {return index;}
-    const char* GetTag() const override {return tag;}
-    Package_info(std::istream& istr){LoadFromStream(istr);}
-    
-    uint16_t name_index;
-    void LoadFromStream(std::istream& istr) override {
-        name_index = GetNextU16(istr);
-    }
-
-    void OutputDataRaw(std::ostream& ostr, const char* prefix = "") override {
-        ostr<<prefix<<"Name Index: "<<name_index;
-    }
-};
-
-class UnusuableConstantPoolMember : public ConstantPoolMember {
-    const int index = 0;
-    const char* tag = "Unusable";
-    int GetIndexOfTag() const override {return index;}
-    const char* GetTag() const override {return tag;}
-    void LoadFromStream(std::istream& istr) override {};
-    void OutputDataRaw(std::ostream& ostr, const char* prefix = ""){
-        ostr<<prefix<<"N/A";
-    }
-};
-
-class CPMError : public ConstantPoolMember {
-public:
-    const int index = -1;
-    const char* tag = "Undefined";
-    int GetIndexOfTag() const override {return index;}
-    const char* GetTag() const override {return tag;}
-    CPMError(std::istream& istr){LoadFromStream(istr);}
-    
-    uint8_t error_index;
-    void LoadFromStream(std::istream& istr) override {
-        istr.unget();
-        error_index = GetNextU8(istr);
-    }
-
-    void OutputDataRaw(std::ostream& ostr, const char* prefix = "") override {
-        ostr<<prefix<<"Error: Index \""<<(unsigned int)error_index<<"\" is Undefined! Begins At Byte [0x"<<std::hex<<byteOffsetFromClassFile<<std::dec<<"] From The Beginning Of The Class File!";
-    }
-};
-
-
-ConstantPoolMember* ConstantPoolMember::GetConstantPoolMember(std::istream& istr, const std::streampos& cf_offset, int* amount_to_increment_pool_index) {
-    ConstantPoolMember* r;
-    std::streampos curr_pos = istr.tellg();
-    switch(GetNextU8(istr)) {
-        case 1: {r = new Utf8_info(istr); break;}
-        case 3: {r = new Integer_info(istr); break;}
-        case 4: {r = new Float_info(istr); break;}
-        case 5: {r = new Long_info(istr); break;}
-        case 6: {r = new Double_info(istr); break;}
-        case 7: {r = new Class_info(istr); break;}
-        case 8: {r = new String_info(istr); break;}
-        case 9: {r = new Fieldref_info(istr); break;}
-        case 10: {r = new Methodref_info(istr); break;}
-        case 11: {r = new InterfaceMethodref_info(istr); break;}
-        case 12: {r = new NameAndType_info(istr); break;}
-        case 15: {r = new MethodHandle_info(istr); break;}
-        case 16: {r = new MethodType_info(istr); break;}
-        case 17: {r = new Dynamic_info(istr); break;}
-        case 18: {r = new InvokeDynamic_info(istr); break;}
-        case 19: {r = new Module_info(istr); break;}
-        case 20: {r = new Package_info(istr); break;}
-        default: {r = new CPMError(istr); break;}
-    }
-    *amount_to_increment_pool_index = r->NumberOfCPEntriesTaken();
-    r->byteOffsetFromClassFile = curr_pos - cf_offset;
-    return r;
-} 
 
 class ConstantPool {
 private:
@@ -425,7 +18,7 @@ private:
     ConstantPoolMember** members;
 public:
     ConstantPool(std::istream& istr, const std::streampos& cf_offset) {
-        count = GetNextU16(istr);
+        count = GetNextBEU16(istr);
         number_of_members = count-1;
         members = new ConstantPoolMember*[count-1];
         int i = 0;
@@ -455,7 +48,7 @@ public:
     void OutputMembersRaw(std::ostream& ostr, const char* prefix){
         for(int i = 0; i < number_of_members; i++){
             ostr<<prefix<<i+1<<": [0x"<<std::hex<<members[i]->byteOffsetFromClassFile<<std::dec<<"] {Tag: "<<members[i]->GetIndexOfTag()<<" ("<<members[i]->GetTag()<<")";
-            members[i]->OutputDataRaw(ostr, ", ");
+            members[i]->WriteJSON(ostr, ", ");
             ostr<<"}";
         }
     }
@@ -464,15 +57,15 @@ public:
 class Attribute_info {
 public:
     Attribute_info(){}
-    Attribute_info(std::istream& istr){LoadFromStream(istr);}
+    Attribute_info(std::istream& istr){ReadFromBinaryStream(istr);}
     ~Attribute_info() {if(info != nullptr) {delete[] info;}}
     uint16_t attribute_name_index;
     uint32_t attribute_length;
     uint8_t* info = nullptr;
 
-    void LoadFromStream(std::istream& istr){
-        attribute_name_index = GetNextU16(istr);
-        attribute_length = GetNextU32(istr);
+    void ReadFromBinaryStream(std::istream& istr){
+        attribute_name_index = GetNextBEU16(istr);
+        attribute_length = GetNextBEU32(istr);
         if(attribute_length > 0){
             info = new uint8_t[attribute_length];
             for(int i = 0; i<attribute_length; i++){
@@ -481,7 +74,7 @@ public:
         }
     }
 
-    void OutputDataRaw(std::ostream& ostr, const char* padding = ", "){
+    void WriteJSON(std::ostream& ostr, const char* padding = ", "){
         ostr<<"Name Index: "<<attribute_name_index;
         ostr<<padding<<"Length (bytes): "<<attribute_length;
         
@@ -633,27 +226,27 @@ class Field_info {
 
 public:
     Field_info(){}
-    Field_info(std::istream& istr){LoadFromStream(istr);}
+    Field_info(std::istream& istr){ReadFromBinaryStream(istr);}
     ~Field_info() {
         if(attributes != nullptr){
             delete[] attributes;
         }
     }
 
-    void LoadFromStream(std::istream& istr){
-        access_flags = GetNextU16(istr);
-        name_index = GetNextU16(istr);
-        descriptor_index = GetNextU16(istr);
-        attributes_count = GetNextU16(istr);
+    void ReadFromBinaryStream(std::istream& istr){
+        access_flags = GetNextBEU16(istr);
+        name_index = GetNextBEU16(istr);
+        descriptor_index = GetNextBEU16(istr);
+        attributes_count = GetNextBEU16(istr);
         if(attributes_count > 0){
             attributes = new Attribute_info[attributes_count];
             for(int i = 0; i<attributes_count; i++){
-                attributes[i].LoadFromStream(istr);
+                attributes[i].ReadFromBinaryStream(istr);
             }
         }
     }
 
-    void OutputDataRaw(std::ostream& ostr, const char* prefix){
+    void WriteJSON(std::ostream& ostr, const char* prefix){
         ostr<<prefix<<"Access Flags:(";
         AccessFlags::OutputFieldAccessFlags(ostr, access_flags, " | ");
         ostr<<")";
@@ -663,7 +256,7 @@ public:
         if(attributes_count > 0){
             for(int i = 0; i < attributes_count; i++){
                 ostr<<prefix<<"Attribute "<<i<<": {";
-                attributes[i].OutputDataRaw(ostr);
+                attributes[i].WriteJSON(ostr);
                 ostr<<"}";
             }
         }
@@ -678,28 +271,28 @@ class Method_info {
 
 public:
     Method_info(){}
-    Method_info(std::istream& istr){LoadFromStream(istr);}
+    Method_info(std::istream& istr){ReadFromBinaryStream(istr);}
     ~Method_info() {
         if(attributes != nullptr){
             delete[] attributes;
         }
     }
 
-    void LoadFromStream(std::istream& istr){
-        access_flags = GetNextU16(istr);
-        name_index = GetNextU16(istr);
-        descriptor_index = GetNextU16(istr);
-        attributes_count = GetNextU16(istr);
+    void ReadFromBinaryStream(std::istream& istr){
+        access_flags = GetNextBEU16(istr);
+        name_index = GetNextBEU16(istr);
+        descriptor_index = GetNextBEU16(istr);
+        attributes_count = GetNextBEU16(istr);
         if(attributes_count > 0){
             attributes = new Attribute_info[attributes_count];
             for(int i = 0; i<attributes_count; i++){
-                attributes[i].LoadFromStream(istr);
+                attributes[i].ReadFromBinaryStream(istr);
             }
         }
 
     }
 
-    void OutputDataRaw(std::ostream& ostr, const char* prefix){
+    void WriteJSON(std::ostream& ostr, const char* prefix){
         ostr<<prefix<<"Access Flags:(";
         AccessFlags::OutputMethodAccessFlags(ostr, access_flags, " | ");
         ostr<<")";
@@ -709,7 +302,7 @@ public:
         if(attributes_count > 0){
             for(int i = 0; i < attributes_count; i++){
                 ostr<<prefix<<"Attribute "<<i<<": {";
-                attributes[i].OutputDataRaw(ostr);
+                attributes[i].WriteJSON(ostr);
                 ostr<<"}";
             }
         }
@@ -746,7 +339,7 @@ public:
 
     ClassFile(){}
     ClassFile(std::istream& istr, std::ostream& err = std::cerr){
-        LoadFromStream(istr, err);
+        ReadFromBinaryStream(istr, err);
     }
 
     ~ClassFile(){
@@ -757,49 +350,49 @@ public:
         if(attributes_info != nullptr){delete[] attributes_info;}
     }
 
-    void LoadFromStream(std::istream& istr, std::ostream& err = std::cerr)
+    void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr)
     {
         beginningStreamPos = istr.tellg();
 
         ReadClassHeader(istr, err);
         
-        minor_version = GetNextU16(istr);
-        major_version = GetNextU16(istr);
+        minor_version = GetNextBEU16(istr);
+        major_version = GetNextBEU16(istr);
 
         constant_pool = new ConstantPool(istr, beginningStreamPos); 
         
-        access_flags = GetNextU16(istr);
+        access_flags = GetNextBEU16(istr);
         
-        this_class_index = GetNextU16(istr);
-        super_class_index = GetNextU16(istr);   
+        this_class_index = GetNextBEU16(istr);
+        super_class_index = GetNextBEU16(istr);   
         
-        interfaces_count = GetNextU16(istr);
+        interfaces_count = GetNextBEU16(istr);
         
         if(interfaces_count > 0){
             interface_indices = new uint16_t[interfaces_count];
             for(int i = 0; i<interfaces_count; i++){
-                interface_indices[i] = GetNextU16(istr);
+                interface_indices[i] = GetNextBEU16(istr);
             }
         }   
-        fields_count = GetNextU16(istr);
+        fields_count = GetNextBEU16(istr);
         if(fields_count > 0){
             fields_info = new Field_info[fields_count];
             for(int i = 0; i<fields_count; i++){
-                fields_info[i].LoadFromStream(istr);
+                fields_info[i].ReadFromBinaryStream(istr);
             }
         }
-        methods_count = GetNextU16(istr);
+        methods_count = GetNextBEU16(istr);
         if(methods_count > 0){
             methods_info = new Method_info[methods_count];
             for(int i = 0; i<methods_count; i++){
-                methods_info[i].LoadFromStream(istr);
+                methods_info[i].ReadFromBinaryStream(istr);
             }
         }   
-        attributes_count = GetNextU16(istr);
+        attributes_count = GetNextBEU16(istr);
         if(attributes_count > 0){
             attributes_info = new Attribute_info[attributes_count];
             for(int i = 0; i<attributes_count; i++){
-                attributes_info[i].LoadFromStream(istr);
+                attributes_info[i].ReadFromBinaryStream(istr);
             }
         }
     }
@@ -809,31 +402,31 @@ public:
         
         ReadClassHeader(istr, err);
 
-        minor_version = GetNextU16(istr);
-        major_version = GetNextU16(istr);
+        minor_version = GetNextBEU16(istr);
+        major_version = GetNextBEU16(istr);
         ostr<<".class version: "<<major_version<<"."<<minor_version<<std::endl;
         
         constant_pool = new ConstantPool(istr, beginningStreamPos);
         ostr<<"Constant Pool:"<<std::endl;
         constant_pool->OutputMembersRaw(ostr, "\n\t");
 
-        access_flags = GetNextU16(istr);
+        access_flags = GetNextBEU16(istr);
         ostr<<std::endl<<"Class Access Flags: {";
         AccessFlags::OutputClassAccessFlags(ostr, access_flags, " | ");
         ostr<<"}"<<std::endl;
 
-        this_class_index = GetNextU16(istr);
+        this_class_index = GetNextBEU16(istr);
         ostr<<"This Class Index: "<<this_class_index<<std::endl;
 
-        super_class_index = GetNextU16(istr);
+        super_class_index = GetNextBEU16(istr);
         ostr<<"Super Class Index: "<<this_class_index<<std::endl;
 
-        interfaces_count = GetNextU16(istr);
+        interfaces_count = GetNextBEU16(istr);
         ostr<<"Number of Interfaces: "<<interfaces_count<<std::endl;
         if(interfaces_count > 0){
             interface_indices = new uint16_t[interfaces_count];
             for(int i = 0; i<interfaces_count; i++){
-                interface_indices[i] = GetNextU16(istr);
+                interface_indices[i] = GetNextBEU16(istr);
             }
         }
         if(interfaces_count > 0){
@@ -845,50 +438,50 @@ public:
         }
 
 
-        fields_count = GetNextU16(istr);
+        fields_count = GetNextBEU16(istr);
         ostr<<"Number of Fields: "<<fields_count;
         if(fields_count > 0){
             fields_info = new Field_info[fields_count];
             for(int i = 0; i<fields_count; i++){
-                fields_info[i].LoadFromStream(istr);
+                fields_info[i].ReadFromBinaryStream(istr);
             }
         }
         if(fields_count > 0){
             for(int i = 0; i < fields_count; i++){
                 ostr<<std::endl<<"Field "<<i<<": ";
-                fields_info[i].OutputDataRaw(ostr, "\n\t");
+                fields_info[i].WriteJSON(ostr, "\n\t");
             }
         }
         ostr<<std::endl<<std::endl;
         
-        methods_count = GetNextU16(istr);
+        methods_count = GetNextBEU16(istr);
         ostr<<"Number of Methods: "<<methods_count;
         if(methods_count > 0){
             methods_info = new Method_info[methods_count];
             for(int i = 0; i<methods_count; i++){
-                methods_info[i].LoadFromStream(istr);
+                methods_info[i].ReadFromBinaryStream(istr);
             }
         }
         if(methods_count > 0){
             for(int i = 0; i < methods_count; i++){
                 ostr<<std::endl<<"Method "<<i<<": ";
-                methods_info[i].OutputDataRaw(ostr, "\n\t");
+                methods_info[i].WriteJSON(ostr, "\n\t");
             }
         }
         ostr<<std::endl<<std::endl;
 
-        attributes_count = GetNextU16(istr);
+        attributes_count = GetNextBEU16(istr);
         ostr<<"Number of Attributes: "<<attributes_count<<std::endl;
         if(attributes_count > 0){
             attributes_info = new Attribute_info[attributes_count];
             for(int i = 0; i<attributes_count; i++){
-                attributes_info[i].LoadFromStream(istr);
+                attributes_info[i].ReadFromBinaryStream(istr);
             }
         }        
         if(attributes_count > 0){
             for(int i = 0; i < attributes_count; i++){
                 ostr<<"Attribute "<<i<<": {";
-                attributes_info[i].OutputDataRaw(ostr, ", ");
+                attributes_info[i].WriteJSON(ostr, ", ");
                 ostr<<"}"<<std::endl;
             }
             ostr<<std::endl;
@@ -896,13 +489,13 @@ public:
     }
 
     void ReadClassHeader(std::istream& istr, std::ostream& err) {
-        header = GetNextU32(istr);
+        header = GetNextBEU32(istr);
         if(header != 0xCAFEBABE){
             err<<"ERROR: .class File Begins With \""<<std::hex<<header<<std::dec<<"\" instead of \"0xCAFEBABE\""<<std::endl;
         }
     }
 
-    void OutputDataRaw(std::ostream& ostr = std::cout) {
+    void WriteJSON(std::ostream& ostr = std::cout) {
         ostr<<".class version: "<<major_version<<"."<<minor_version<<std::endl;
         
         ostr<<"Constant Pool:"<<std::endl;
@@ -928,7 +521,7 @@ public:
         if(fields_count > 0){
             for(int i = 0; i < fields_count; i++){
                 ostr<<std::endl<<"Field "<<i<<": ";
-                fields_info[i].OutputDataRaw(ostr, "\n\t");
+                fields_info[i].WriteJSON(ostr, "\n\t");
             }
         }
         ostr<<std::endl<<std::endl;
@@ -937,7 +530,7 @@ public:
         if(methods_count > 0){
             for(int i = 0; i < methods_count; i++){
                 ostr<<std::endl<<"Method "<<i<<": ";
-                methods_info[i].OutputDataRaw(ostr, "\n\t");
+                methods_info[i].WriteJSON(ostr, "\n\t");
             }
         }
         ostr<<std::endl<<std::endl;
@@ -946,7 +539,7 @@ public:
         if(attributes_count > 0){
             for(int i = 0; i < attributes_count; i++){
                 ostr<<"Attribute "<<i<<": {";
-                attributes_info[i].OutputDataRaw(ostr, ", ");
+                attributes_info[i].WriteJSON(ostr, ", ");
                 ostr<<"}"<<std::endl;
             }
             ostr<<std::endl;
