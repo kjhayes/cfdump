@@ -4,10 +4,27 @@
 int main(int argc, char** argv) {
     if(argc == 1){std::cerr<<"ERROR: No Argument Was Passed!"<<std::endl; return 1;}
     std::ifstream istr(argv[1], std::ios::binary);
+    if(!istr.is_open()){std::cerr<<"ERROR: Could Not Open File: "<<argv[1]<<std::endl; return 1;}
 
     cfd::ClassFile classfile;
     classfile.ReadFromBinaryStream(istr);
     iou::JSONFormatting format;
-    classfile.WriteJSON(std::cout, format);
+    format.spacing = 0;
+
+    if(argc > 2){
+        std::ofstream file(argv[2]);
+        if(!file.is_open()){
+            std::cerr<<"Could Not Open File: "<<argv[2]<<std::endl; return 1;
+        }
+        file.clear();
+        file<<"{\n";
+        classfile.WriteJSON(file, format);
+        file<<"\n}";
+    }
+    else{
+        std::cout<<"{\n";
+        classfile.WriteJSON(std::cout, format);
+        std::cout<<"\n}";
+    }
     return 0;
 }

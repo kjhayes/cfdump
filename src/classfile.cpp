@@ -11,7 +11,7 @@
 namespace cfd {
 
 ClassFile::ClassFile(){}
-ClassFile::ClassFile(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+ClassFile::ClassFile(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 ClassFile::~ClassFile(){
     if(constant_pool != nullptr){delete constant_pool;}
     if(interface_indices != nullptr){delete[] interface_indices;}
@@ -19,7 +19,7 @@ ClassFile::~ClassFile(){
     if(methods_info != nullptr){delete[] methods_info;}
     if(attributes_info != nullptr){delete[] attributes_info;}
 }
-void ClassFile::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr)
+void ClassFile::ReadFromBinaryStream(std::istream& istr, std::ostream& err)
 {
     header = iou::GetNextBEU32(istr, err);
     if(header != 0xCAFEBABE){err<<"ERROR: .class File Begins With \""<<std::hex<<header<<std::dec<<"\" instead of \"0xCAFEBABE\""<<std::endl;}
@@ -87,7 +87,7 @@ void ClassFile::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) co
     }
     iou::JSON::WriteJSONUnsigned(ostr, "Number Of Attributes", attributes_count, formatting);
     for(int i = 0; i < attributes_count; i++){
-        iou::JSON::WriteJSONObject(ostr, (std::string("Attribute ")+std::to_string(i)).c_str(), attributes_info[i], formatting);
+        iou::JSON::WriteJSONObject(ostr, (std::string("Attribute ")+std::to_string(i)).c_str(), attributes_info[i], formatting, (i == (attributes_count-1)));
     }
 }
 

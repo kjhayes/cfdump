@@ -17,15 +17,15 @@ const char* ClassAccessFlags::ClassAccessStrings[9] = {
     "MODULE"        //8
 };
 
-void ClassAccessFlags::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void ClassAccessFlags::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     flags = iou::GetNextBEU16(istr, err);
 }
 
-const char* padding = " ";
 void ClassAccessFlags::WriteJSON(std::ostream& ostr, const iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONHex(ostr, "Value", flags, formatting);
     iou::JSON::BeginWriteJSONStringStreamed(ostr, "Decoded", formatting);
     bool has_been_output = false;
+    const char* padding = " ";
     if(flags & ClassAccessFlags::Enum::C_ABSTRACT) {if(has_been_output){ostr<<padding;}ostr<<ClassAccessStrings[4];has_been_output = true;}
     if(flags & ClassAccessFlags::Enum::C_ANNOTATION) {if(has_been_output){ostr<<padding;}ostr<<ClassAccessStrings[6];has_been_output = true;}
     if(flags & ClassAccessFlags::Enum::C_ENUM) {if(has_been_output){ostr<<padding;}ostr<<ClassAccessStrings[7];has_been_output = true;}

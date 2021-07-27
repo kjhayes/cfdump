@@ -8,14 +8,14 @@
 namespace cfd {
 
 Field_info::Field_info(){}
-Field_info::Field_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+Field_info::Field_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 Field_info::~Field_info() {
     if(attributes != nullptr){
         delete[] attributes;
     }
 }
 
-void Field_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void Field_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     access_flags.ReadFromBinaryStream(istr, err);
     name_index = iou::GetNextBEU16(istr);
     descriptor_index = iou::GetNextBEU16(istr);

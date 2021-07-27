@@ -20,15 +20,15 @@ const char* MethodAccessFlags::MethodAccessStrings[12] = {
     "SYNTHETIC"     //11
 };
 
-void MethodAccessFlags::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void MethodAccessFlags::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     flags = iou::GetNextBEU16(istr, err);
 }
 
-const char* padding = " ";    
 void MethodAccessFlags::WriteJSON(std::ostream& ostr, const iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONHex(ostr, "Value", flags, formatting);
     iou::JSON::BeginWriteJSONStringStreamed(ostr, "Decoded", formatting);
     bool has_been_output = false;    
+    const char* padding = " ";    
     if(flags & MethodAccessFlags::Enum::M_ABSTRACT) {if(has_been_output){ostr<<padding;}ostr<<MethodAccessStrings[9];has_been_output = true;}
     if(flags & MethodAccessFlags::Enum::M_BRIDGE) {if(has_been_output){ostr<<padding;}ostr<<MethodAccessStrings[6];has_been_output = true;}
     if(flags & MethodAccessFlags::Enum::M_FINAL) {if(has_been_output){ostr<<padding;}ostr<<MethodAccessStrings[4];has_been_output = true;}

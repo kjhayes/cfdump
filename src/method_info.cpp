@@ -8,14 +8,14 @@
 namespace cfd {
 
 Method_info::Method_info(){}
-Method_info::Method_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+Method_info::Method_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 Method_info::~Method_info() {
     if(attributes != nullptr){
         delete[] attributes;
     }
 }
 
-void Method_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void Method_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     access_flags.ReadFromBinaryStream(istr, err);
     name_index = iou::GetNextBEU16(istr);
     descriptor_index = iou::GetNextBEU16(istr);

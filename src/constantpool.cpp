@@ -7,7 +7,7 @@
 
 namespace cfd {
 
-ConstantPool::ConstantPool(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+ConstantPool::ConstantPool(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 ConstantPool::~ConstantPool() {
     if(members != nullptr){
         for(int i = 0; i<number_of_members; i++){
@@ -22,7 +22,7 @@ ConstantPoolMember* ConstantPool::GetMember_ArrayIndex(const int& index) {return
 int ConstantPool::GetCount() {return count;}
 int ConstantPool::GetNumberOfMembers() {return number_of_members;}
 
-void ConstantPool::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void ConstantPool::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     count = iou::GetNextBEU16(istr);
     number_of_members = count-1;
     members = new ConstantPoolMember*[count-1];
@@ -40,7 +40,7 @@ void ConstantPool::ReadFromBinaryStream(std::istream& istr, std::ostream& err = 
 }
 void ConstantPool::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     for(int i = 0; i < number_of_members; i++){
-        iou::JSON::WriteJSONObject(ostr, (std::string("Index ")+std::to_string(i)).c_str(), *(members[i]), formatting, (i == number_of_members-1));
+        iou::JSON::WriteJSONObject(ostr, (std::string("Index ")+std::to_string(i+1)).c_str(), *(members[i]), formatting, (i == number_of_members-1));
     }
 }
 

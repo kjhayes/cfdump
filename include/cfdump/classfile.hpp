@@ -37,8 +37,8 @@ public:
     uint16_t attributes_count;
     Attribute_info* attributes_info = nullptr;
 
-    ClassFile(){}
-    ClassFile(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+    ClassFile();
+    ClassFile(std::istream& istr, std::ostream& err = std::cerr);
     ~ClassFile();
 
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;

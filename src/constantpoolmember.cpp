@@ -4,13 +4,15 @@
 #include "iostream-util/json.hpp"
 #include "iostream-util/streamread.hpp"
 
+#include<cstring>
+
 namespace cfd {
 
 //Utf8_info
 int Utf8_info::GetIndexOfTag() const {return 1;}
-Utf8_info::Utf8_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+Utf8_info::Utf8_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 Utf8_info::~Utf8_info() {if(data != nullptr){delete data;}}
-void Utf8_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void Utf8_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     length = iou::GetNextBEU16(istr);
     data = new uint8_t[length+1];
     for(int i = 0; i < length; i++){
@@ -19,249 +21,249 @@ void Utf8_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std
     data[length] = 0x00;
 }
 void Utf8_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting, true);
-    iou::JSON::WriteJSONUnsigned(ostr, "Length", data, formatting, false);
+    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
+    iou::JSON::WriteJSONUnsigned(ostr, "Length", length, formatting, false);
     //This Should Work For Ascii and some of the BMP, But Will Break Horribly In Extended Unicode
     iou::JSON::WriteJSONString(ostr, "MUTF-8", (char*)data, formatting, true);
 }
 
 //Integer_info
 int Integer_info::GetIndexOfTag() const {return 3;}
-Integer_info::Integer_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
-void Integer_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+Integer_info::Integer_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
+void Integer_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     static_assert(sizeof(int32_t) <= sizeof(uint32_t));
     uint32_t i = iou::GetNextBEU32(istr);
     memcpy(&value, &i, sizeof(int32_t));
 }
 void Integer_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting, true);
+    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
     iou::JSON::WriteJSONSigned(ostr, "Value", value, formatting, true);
 }
 
 //Float_info
 int Float_info::GetIndexOfTag() const {return 4;}
-Float_info::Float_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
-void Float_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+Float_info::Float_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
+void Float_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     static_assert(sizeof(float) <= sizeof(uint32_t));
     uint32_t i = iou::GetNextBEU32(istr);
     memcpy(&i, &value, sizeof(float));
 }
 void Float_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting, true);
-    iou::JSON::WriteJSONStreamed(ostr, "Value", value, formatting, true);
+    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
+    iou::JSON::WriteJSONNumber(ostr, "Value", value, formatting, true);
 }
 
 //Long_info
 int Long_info::GetIndexOfTag() const {return 5;}
-Long_info::Long_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+Long_info::Long_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 
-void Long_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void Long_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     static_assert(sizeof(int64_t) <= sizeof(uint64_t));
     uint64_t i = iou::GetNextBEU64(istr);
     memcpy(&value, &i, sizeof(int64_t));
 }
 void Long_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting, true);
+    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
     iou::JSON::WriteJSONSigned(ostr, "Value", value, formatting, true);
 }
 int Long_info::NumberOfCPEntriesTaken() const {return 2;}
 
 //Double_info
 int Double_info::GetIndexOfTag() const {return 6;}
-Double_info::Double_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+Double_info::Double_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 
-void Double_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void Double_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     uint64_t i = iou::GetNextBEU64(istr);
     static_assert(sizeof(double) <= sizeof(uint64_t));
     memcpy(&value, &i, sizeof(double));
 }
 void Double_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting, true);
-    iou::JSON::WriteJSONStreamed(ostr, "Value", value, formatting, true);
+    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
+    iou::JSON::WriteJSONNumber(ostr, "Value", value, formatting, true);
 }
 int Double_info::NumberOfCPEntriesTaken() const {return 2;}
 
 //Class_info
 int Class_info::GetIndexOfTag() const {return 7;}
-Class_info::Class_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+Class_info::Class_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 
-void Class_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void Class_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     name_index = iou::GetNextBEU16(istr);
 }
 void Class_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting, true);
-    iou::JSON::WriteJSONStreamed(ostr, "Name Index", name_index, formatting, true);
+    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
+    iou::JSON::WriteJSONUnsigned(ostr, "Name Index", name_index, formatting, true);
 }
 
 //String_info
 int String_info::GetIndexOfTag() const {return 8;}
-String_info::String_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+String_info::String_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 
-void String_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void String_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     string_index = iou::GetNextBEU16(istr);
 }
 void String_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting, true);
+    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "String Index", string_index, formatting, true);
 }
 
 //Fieldref_info::
 int Fieldref_info::GetIndexOfTag() const {return 9;}
-Fieldref_info::Fieldref_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+Fieldref_info::Fieldref_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 
-void Fieldref_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void Fieldref_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     class_index = iou::GetNextBEU16(istr);
     nameandtype_index = iou::GetNextBEU16(istr);
 }
 void Fieldref_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting, true);
-    iou::JSON::WriteJSONUnsigned(ostr, "Class Index", class_index, formatting, true);
+    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
+    iou::JSON::WriteJSONUnsigned(ostr, "Class Index", class_index, formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "NameAndType Index", nameandtype_index, formatting, true);
 }
 
 //Methodref_info
 int Methodref_info::GetIndexOfTag() const {return 10;}
-Methodref_info::Methodref_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+Methodref_info::Methodref_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 
-void Methodref_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void Methodref_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     class_index = iou::GetNextBEU16(istr);
     nameandtype_index = iou::GetNextBEU16(istr);
 }
 void Methodref_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting, true);
-    iou::JSON::WriteJSONUnsigned(ostr, "Class Index", class_index, formatting, true);
+    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
+    iou::JSON::WriteJSONUnsigned(ostr, "Class Index", class_index, formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "NameAndType Index", nameandtype_index, formatting, true);
 }
 
 //InterfaceMethodref_info
 int InterfaceMethodref_info::GetIndexOfTag() const {return 11;}
-InterfaceMethodref_info::InterfaceMethodref_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+InterfaceMethodref_info::InterfaceMethodref_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 
-void InterfaceMethodref_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void InterfaceMethodref_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     class_index = iou::GetNextBEU16(istr);
     nameandtype_index = iou::GetNextBEU16(istr);
 }
 void InterfaceMethodref_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting, true);
-    iou::JSON::WriteJSONUnsigned(ostr, "Class Index", class_index, formatting, true);
+    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
+    iou::JSON::WriteJSONUnsigned(ostr, "Class Index", class_index, formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "NameAndType Index", nameandtype_index, formatting, true);
 }
 
 //NameAndType_info
 int NameAndType_info::GetIndexOfTag() const {return 12;}
-NameAndType_info::NameAndType_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+NameAndType_info::NameAndType_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 
-void NameAndType_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void NameAndType_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     name_index = iou::GetNextBEU16(istr);
     descriptor_index = iou::GetNextBEU16(istr);
 }
 void NameAndType_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting, true);
-    iou::JSON::WriteJSONUnsigned(ostr, "Name Index", name_index, formatting, true);
+    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
+    iou::JSON::WriteJSONUnsigned(ostr, "Name Index", name_index, formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "Descriptor Index", descriptor_index, formatting, true);
 }
 
 //MethodHandle_info
 int MethodHandle_info::GetIndexOfTag() const {return 15;}
-MethodHandle_info::MethodHandle_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+MethodHandle_info::MethodHandle_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 
-void MethodHandle_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void MethodHandle_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     reference_kind = iou::GetNextU8(istr);
     reference_index = iou::GetNextBEU16(istr);
 }
 void MethodHandle_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting, true);
+    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "Reference Kind", reference_kind, formatting, true);
     iou::JSON::WriteJSONUnsigned(ostr, "Reference Index", reference_index, formatting, true);
 }
 
 //MethodType_info
 int MethodType_info::GetIndexOfTag() const {return 16;}
-MethodType_info::MethodType_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+MethodType_info::MethodType_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 
-void MethodType_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void MethodType_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     descriptor_index = iou::GetNextBEU16(istr);
 }
 void MethodType_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting, true);
+    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "Descriptor Index", descriptor_index, formatting, true);
 }
 
 //Dynamic_info
 int Dynamic_info::GetIndexOfTag() const {return 17;}
-Dynamic_info::Dynamic_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+Dynamic_info::Dynamic_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 
-void Dynamic_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void Dynamic_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     bootstrap_method_attr_index = iou::GetNextBEU16(istr);
     nameandtype_index = iou::GetNextBEU16(istr);
 }
 void Dynamic_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting, true);
+    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "Bootstrap Method Attr Index", bootstrap_method_attr_index, formatting, true);
     iou::JSON::WriteJSONUnsigned(ostr, "NameAndType Index", nameandtype_index, formatting, true);
 }
 
 //InvokeDynamic_info
 int InvokeDynamic_info::GetIndexOfTag() const {return 18;}
-InvokeDynamic_info::InvokeDynamic_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+InvokeDynamic_info::InvokeDynamic_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 
-void InvokeDynamic_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void InvokeDynamic_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     bootstrap_method_attr_index = iou::GetNextBEU16(istr);
     nameandtype_index = iou::GetNextBEU16(istr);
 }
 void InvokeDynamic_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting, true);
+    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "Bootstrap Method Attr Index", bootstrap_method_attr_index, formatting, true);
     iou::JSON::WriteJSONUnsigned(ostr, "NameAndType Index", nameandtype_index, formatting, true);
 }
 
 //Module_info
 int Module_info::GetIndexOfTag() const {return 19;}
-Module_info::Module_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+Module_info::Module_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 
-void Module_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void Module_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     name_index = iou::GetNextBEU16(istr);
 }
 void Module_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting, true);
+    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "Name Index", name_index, formatting, true);
 }
 
 //Package_info
 int Package_info::GetIndexOfTag() const {return 20;}
-Package_info::Package_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+Package_info::Package_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 
-void Package_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void Package_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     name_index = iou::GetNextBEU16(istr);
 }
 void Package_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting, true);
+    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "Name Index", name_index, formatting, true);
 }
 
 //UnusuableConstantPoolMember
 int UnusuableConstantPoolMember::GetIndexOfTag() const {return -1;}
-void UnusuableConstantPoolMember::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {};
+void UnusuableConstantPoolMember::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {};
 void UnusuableConstantPoolMember::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting, true);
+    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
     iou::JSON::WriteJSONString(ostr, "Unused", "This Constant Pool Index Is Invalid", formatting, true);
 }
 
 //CPMError
 int CPMError::GetIndexOfTag() const {return -2;}
-CPMError::CPMError(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
+CPMError::CPMError(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
 
-void CPMError::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
+void CPMError::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     istr.unget();
     error_index = iou::GetNextU8(istr);
 }
 void CPMError::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting, true);
+    iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "Error Index", error_index, formatting, true);
 }
 
 //Get CPM
-ConstantPoolMember* ConstantPoolMember::GetConstantPoolMember(std::istream& istr, std::ostream& err = std::cerr) {
+ConstantPoolMember* ConstantPoolMember::GetConstantPoolMember(std::istream& istr, std::ostream& err) {
     ConstantPoolMember* r;
     switch(iou::GetNextU8(istr, err)) {
         case 1: {r = new Utf8_info(istr, err); break;}
