@@ -82,7 +82,7 @@ void ClassFile::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) co
         iou::JSON::WriteJSONObject(ostr, (std::string("Field ")+std::to_string(i)).c_str(), fields_info[i], formatting);
     }
     iou::JSON::WriteJSONUnsigned(ostr, "Number Of Methods", methods_count, formatting);
-    for(int i = 0; i < fields_count; i++){
+    for(int i = 0; i < methods_count; i++){
         iou::JSON::WriteJSONObject(ostr, (std::string("Method ")+std::to_string(i)).c_str(), methods_info[i], formatting);
     }
     iou::JSON::WriteJSONUnsigned(ostr, "Number Of Attributes", attributes_count, formatting);
