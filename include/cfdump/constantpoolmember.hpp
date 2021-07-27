@@ -1,19 +1,17 @@
 #ifndef CFDUMP_CONSTANTPOOLMEMBER_HPP
 #define CFDUMP_CONSTANTPOOLMEMBER_HPP
 
-#include "iostream-util/streamread.hpp"
 #include "iostream-util/ibinaryreadable.hpp"
 #include "iostream-util/ijsonwriteable.hpp"
-#include "iostream-util/json.hpp"
+
+namespace cfd {
 
 class ConstantPoolMember : public iou::IBinaryReadable, public iou::IJSONWriteable {
 public:
-    size_t byteOffsetFromClassFile;
-    
     virtual int GetIndexOfTag() const = 0;    
     virtual int NumberOfCPEntriesTaken() const {return 1;}
     
-    static ConstantPoolMember* GetConstantPoolMember(std::istream& istr, const std::streampos& cf_offset, int* number_of_cp_entries_taken);
+    static ConstantPoolMember* GetConstantPoolMember(std::istream& istr, std::ostream& err = std::cerr);
     static const char* GetConstantPoolMemberString(const ConstantPoolMember& cpm);
 };
 
@@ -32,7 +30,7 @@ public:
 class Integer_info : public ConstantPoolMember {
 public:
     int GetIndexOfTag() const override;
-    Integer_info(std::istream& istr);
+    Integer_info(std::istream& istr, std::ostream& err = std::cerr);
 
     int32_t value;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
@@ -41,7 +39,7 @@ public:
 class Float_info : public ConstantPoolMember {
 public:
     int GetIndexOfTag() const override;
-    Float_info(std::istream& istr);
+    Float_info(std::istream& istr, std::ostream& err = std::cerr);
     
     float value;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
@@ -50,7 +48,7 @@ public:
 class Long_info : public ConstantPoolMember {
 public:
     int GetIndexOfTag() const override;
-    Long_info(std::istream& istr);
+    Long_info(std::istream& istr, std::ostream& err = std::cerr);
     
     int64_t value;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
@@ -60,7 +58,7 @@ public:
 class Double_info : public ConstantPoolMember {
 public:
     int GetIndexOfTag() const override;
-    Double_info(std::istream& istr);
+    Double_info(std::istream& istr, std::ostream& err = std::cerr);
     
     double value;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
@@ -70,7 +68,7 @@ public:
 class Class_info : public ConstantPoolMember {
 public:
     int GetIndexOfTag() const override;
-    Class_info(std::istream& istr);
+    Class_info(std::istream& istr, std::ostream& err = std::cerr);
 
     uint16_t name_index;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
@@ -79,7 +77,7 @@ public:
 class String_info : public ConstantPoolMember {
 public:
     int GetIndexOfTag() const override;
-    String_info(std::istream& istr);
+    String_info(std::istream& istr, std::ostream& err = std::cerr);
     
     uint16_t string_index;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
@@ -88,7 +86,7 @@ public:
 class Fieldref_info : public ConstantPoolMember {
 public:
     int GetIndexOfTag() const override;
-    Fieldref_info(std::istream& istr);
+    Fieldref_info(std::istream& istr, std::ostream& err = std::cerr);
 
     uint16_t class_index;
     uint16_t nameandtype_index;
@@ -98,7 +96,7 @@ public:
 class Methodref_info : public ConstantPoolMember {
 public:
     int GetIndexOfTag() const override;
-    Methodref_info(std::istream& istr);
+    Methodref_info(std::istream& istr, std::ostream& err = std::cerr);
     
     uint16_t class_index;
     uint16_t nameandtype_index;
@@ -108,7 +106,7 @@ public:
 class InterfaceMethodref_info : public ConstantPoolMember {
 public:
     int GetIndexOfTag() const override;
-    InterfaceMethodref_info(std::istream& istr);
+    InterfaceMethodref_info(std::istream& istr, std::ostream& err = std::cerr);
     
     uint16_t class_index;
     uint16_t nameandtype_index;
@@ -118,7 +116,7 @@ public:
 class NameAndType_info : public ConstantPoolMember {
 public:
     int GetIndexOfTag() const override;
-    NameAndType_info(std::istream& istr);
+    NameAndType_info(std::istream& istr, std::ostream& err = std::cerr);
     
     uint16_t name_index;
     uint16_t descriptor_index;
@@ -128,7 +126,7 @@ public:
 class MethodHandle_info : public ConstantPoolMember {
 public:
     int GetIndexOfTag() const override;
-    MethodHandle_info(std::istream& istr);
+    MethodHandle_info(std::istream& istr, std::ostream& err = std::cerr);
     
     uint8_t reference_kind;
     uint16_t reference_index;
@@ -138,7 +136,7 @@ public:
 class MethodType_info : public ConstantPoolMember {
 public:
     int GetIndexOfTag() const override;
-    MethodType_info(std::istream& istr);
+    MethodType_info(std::istream& istr, std::ostream& err = std::cerr);
     
     uint16_t descriptor_index;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
@@ -147,7 +145,7 @@ public:
 class Dynamic_info : public ConstantPoolMember {
 public:
     int GetIndexOfTag() const override;
-    Dynamic_info(std::istream& istr);
+    Dynamic_info(std::istream& istr, std::ostream& err = std::cerr);
     
     uint16_t bootstrap_method_attr_index;
     uint16_t nameandtype_index;
@@ -157,7 +155,7 @@ public:
 class InvokeDynamic_info : public ConstantPoolMember {
 public:
     int GetIndexOfTag() const override;
-    InvokeDynamic_info(std::istream& istr);
+    InvokeDynamic_info(std::istream& istr, std::ostream& err = std::cerr);
     
     uint16_t bootstrap_method_attr_index;
     uint16_t nameandtype_index;
@@ -168,7 +166,7 @@ class Module_info : public ConstantPoolMember {
 public:
     ;
     int GetIndexOfTag() const override;
-    Module_info(std::istream& istr);
+    Module_info(std::istream& istr, std::ostream& err = std::cerr);
     
     uint16_t name_index;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
@@ -177,7 +175,7 @@ public:
 class Package_info : public ConstantPoolMember {
 public:
     int GetIndexOfTag() const override;
-    Package_info(std::istream& istr);
+    Package_info(std::istream& istr, std::ostream& err = std::cerr);
     
     uint16_t name_index;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
@@ -193,11 +191,13 @@ class UnusuableConstantPoolMember : public ConstantPoolMember {
 class CPMError : public ConstantPoolMember {
 public:
     int GetIndexOfTag() const override;
-    CPMError(std::istream& istr);
+    CPMError(std::istream& istr, std::ostream& err = std::cerr);
     
     uint8_t error_index;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
     void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
 };
+
+}
 
 #endif

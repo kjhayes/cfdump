@@ -1,5 +1,11 @@
 #include "cfdump/constantpoolmember.hpp"
 
+#include "cfdump/static_assertions.hpp"
+#include "iostream-util/json.hpp"
+#include "iostream-util/streamread.hpp"
+
+namespace cfd {
+
 //Utf8_info
 int Utf8_info::GetIndexOfTag() const {return 1;}
 Utf8_info::Utf8_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
@@ -21,7 +27,7 @@ void Utf8_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) co
 
 //Integer_info
 int Integer_info::GetIndexOfTag() const {return 3;}
-Integer_info::Integer_info(std::istream& istr){ReadFromBinaryStream(istr);}
+Integer_info::Integer_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
 void Integer_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
     static_assert(sizeof(int32_t) <= sizeof(uint32_t));
     uint32_t i = iou::GetNextBEU32(istr);
@@ -34,7 +40,7 @@ void Integer_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting)
 
 //Float_info
 int Float_info::GetIndexOfTag() const {return 4;}
-Float_info::Float_info(std::istream& istr){ReadFromBinaryStream(istr);}
+Float_info::Float_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
 void Float_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
     static_assert(sizeof(float) <= sizeof(uint32_t));
     uint32_t i = iou::GetNextBEU32(istr);
@@ -47,7 +53,7 @@ void Float_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) c
 
 //Long_info
 int Long_info::GetIndexOfTag() const {return 5;}
-Long_info::Long_info(std::istream& istr){ReadFromBinaryStream(istr);}
+Long_info::Long_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
 
 void Long_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
     static_assert(sizeof(int64_t) <= sizeof(uint64_t));
@@ -62,7 +68,7 @@ int Long_info::NumberOfCPEntriesTaken() const {return 2;}
 
 //Double_info
 int Double_info::GetIndexOfTag() const {return 6;}
-Double_info::Double_info(std::istream& istr){ReadFromBinaryStream(istr);}
+Double_info::Double_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
 
 void Double_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
     uint64_t i = iou::GetNextBEU64(istr);
@@ -77,7 +83,7 @@ int Double_info::NumberOfCPEntriesTaken() const {return 2;}
 
 //Class_info
 int Class_info::GetIndexOfTag() const {return 7;}
-Class_info::Class_info(std::istream& istr){ReadFromBinaryStream(istr);}
+Class_info::Class_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
 
 void Class_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
     name_index = iou::GetNextBEU16(istr);
@@ -89,7 +95,7 @@ void Class_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) c
 
 //String_info
 int String_info::GetIndexOfTag() const {return 8;}
-String_info::String_info(std::istream& istr){ReadFromBinaryStream(istr);}
+String_info::String_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
 
 void String_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
     string_index = iou::GetNextBEU16(istr);
@@ -101,7 +107,7 @@ void String_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) 
 
 //Fieldref_info::
 int Fieldref_info::GetIndexOfTag() const {return 9;}
-Fieldref_info::Fieldref_info(std::istream& istr){ReadFromBinaryStream(istr);}
+Fieldref_info::Fieldref_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
 
 void Fieldref_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
     class_index = iou::GetNextBEU16(istr);
@@ -115,7 +121,7 @@ void Fieldref_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting
 
 //Methodref_info
 int Methodref_info::GetIndexOfTag() const {return 10;}
-Methodref_info::Methodref_info(std::istream& istr){ReadFromBinaryStream(istr);}
+Methodref_info::Methodref_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
 
 void Methodref_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
     class_index = iou::GetNextBEU16(istr);
@@ -129,7 +135,7 @@ void Methodref_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formattin
 
 //InterfaceMethodref_info
 int InterfaceMethodref_info::GetIndexOfTag() const {return 11;}
-InterfaceMethodref_info::InterfaceMethodref_info(std::istream& istr){ReadFromBinaryStream(istr);}
+InterfaceMethodref_info::InterfaceMethodref_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
 
 void InterfaceMethodref_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
     class_index = iou::GetNextBEU16(istr);
@@ -143,7 +149,7 @@ void InterfaceMethodref_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting 
 
 //NameAndType_info
 int NameAndType_info::GetIndexOfTag() const {return 12;}
-NameAndType_info::NameAndType_info(std::istream& istr){ReadFromBinaryStream(istr);}
+NameAndType_info::NameAndType_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
 
 void NameAndType_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
     name_index = iou::GetNextBEU16(istr);
@@ -157,7 +163,7 @@ void NameAndType_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatt
 
 //MethodHandle_info
 int MethodHandle_info::GetIndexOfTag() const {return 15;}
-MethodHandle_info::MethodHandle_info(std::istream& istr){ReadFromBinaryStream(istr);}
+MethodHandle_info::MethodHandle_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
 
 void MethodHandle_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
     reference_kind = iou::GetNextU8(istr);
@@ -171,7 +177,7 @@ void MethodHandle_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting format
 
 //MethodType_info
 int MethodType_info::GetIndexOfTag() const {return 16;}
-MethodType_info::MethodType_info(std::istream& istr){ReadFromBinaryStream(istr);}
+MethodType_info::MethodType_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
 
 void MethodType_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
     descriptor_index = iou::GetNextBEU16(istr);
@@ -183,7 +189,7 @@ void MethodType_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatti
 
 //Dynamic_info
 int Dynamic_info::GetIndexOfTag() const {return 17;}
-Dynamic_info::Dynamic_info(std::istream& istr){ReadFromBinaryStream(istr);}
+Dynamic_info::Dynamic_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
 
 void Dynamic_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
     bootstrap_method_attr_index = iou::GetNextBEU16(istr);
@@ -197,7 +203,7 @@ void Dynamic_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting)
 
 //InvokeDynamic_info
 int InvokeDynamic_info::GetIndexOfTag() const {return 18;}
-InvokeDynamic_info::InvokeDynamic_info(std::istream& istr){ReadFromBinaryStream(istr);}
+InvokeDynamic_info::InvokeDynamic_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
 
 void InvokeDynamic_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
     bootstrap_method_attr_index = iou::GetNextBEU16(istr);
@@ -211,7 +217,7 @@ void InvokeDynamic_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting forma
 
 //Module_info
 int Module_info::GetIndexOfTag() const {return 19;}
-Module_info::Module_info(std::istream& istr){ReadFromBinaryStream(istr);}
+Module_info::Module_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
 
 void Module_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
     name_index = iou::GetNextBEU16(istr);
@@ -223,7 +229,7 @@ void Module_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) 
 
 //Package_info
 int Package_info::GetIndexOfTag() const {return 20;}
-Package_info::Package_info(std::istream& istr){ReadFromBinaryStream(istr);}
+Package_info::Package_info(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
 
 void Package_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
     name_index = iou::GetNextBEU16(istr);
@@ -243,7 +249,7 @@ void UnusuableConstantPoolMember::WriteJSON(std::ostream& ostr, iou::JSONFormatt
 
 //CPMError
 int CPMError::GetIndexOfTag() const {return -2;}
-CPMError::CPMError(std::istream& istr){ReadFromBinaryStream(istr);}
+CPMError::CPMError(std::istream& istr, std::ostream& err = std::cerr){ReadFromBinaryStream(istr, err);}
 
 void CPMError::ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) {
     istr.unget();
@@ -255,32 +261,28 @@ void CPMError::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) con
 }
 
 //Get CPM
-ConstantPoolMember* ConstantPoolMember::GetConstantPoolMember(std::istream& istr, const std::streampos& cf_offset, int* amount_to_increment_pool_index) {
+ConstantPoolMember* ConstantPoolMember::GetConstantPoolMember(std::istream& istr, std::ostream& err = std::cerr) {
     ConstantPoolMember* r;
-    std::streampos curr_pos = istr.tellg();
-    switch(iou::GetNextU8(istr)) {
-        case 1: {r = new Utf8_info(istr); break;}
-        case 3: {r = new Integer_info(istr); break;}
-        case 4: {r = new Float_info(istr); break;}
-        case 5: {r = new Long_info(istr); break;}
-        case 6: {r = new Double_info(istr); break;}
-        case 7: {r = new Class_info(istr); break;}
-        case 8: {r = new String_info(istr); break;}
-        case 9: {r = new Fieldref_info(istr); break;}
-        case 10: {r = new Methodref_info(istr); break;}
-        case 11: {r = new InterfaceMethodref_info(istr); break;}
-        case 12: {r = new NameAndType_info(istr); break;}
-        case 15: {r = new MethodHandle_info(istr); break;}
-        case 16: {r = new MethodType_info(istr); break;}
-        case 17: {r = new Dynamic_info(istr); break;}
-        case 18: {r = new InvokeDynamic_info(istr); break;}
-        case 19: {r = new Module_info(istr); break;}
-        case 20: {r = new Package_info(istr); break;}
-        case -1: {r = new UnusuableConstantPoolMember(); break;}
-        default: {r = new CPMError(istr); break;}
+    switch(iou::GetNextU8(istr, err)) {
+        case 1: {r = new Utf8_info(istr, err); break;}
+        case 3: {r = new Integer_info(istr, err); break;}
+        case 4: {r = new Float_info(istr, err); break;}
+        case 5: {r = new Long_info(istr, err); break;}
+        case 6: {r = new Double_info(istr, err); break;}
+        case 7: {r = new Class_info(istr, err); break;}
+        case 8: {r = new String_info(istr, err); break;}
+        case 9: {r = new Fieldref_info(istr, err); break;}
+        case 10: {r = new Methodref_info(istr, err); break;}
+        case 11: {r = new InterfaceMethodref_info(istr, err); break;}
+        case 12: {r = new NameAndType_info(istr, err); break;}
+        case 15: {r = new MethodHandle_info(istr, err); break;}
+        case 16: {r = new MethodType_info(istr, err); break;}
+        case 17: {r = new Dynamic_info(istr, err); break;}
+        case 18: {r = new InvokeDynamic_info(istr, err); break;}
+        case 19: {r = new Module_info(istr, err); break;}
+        case 20: {r = new Package_info(istr, err); break;}
+        default: {r = new CPMError(istr, err); break;}
     }
-    *amount_to_increment_pool_index = r->NumberOfCPEntriesTaken();
-    r->byteOffsetFromClassFile = curr_pos - cf_offset;
     return r;
 }
 const char* ConstantPoolMember::GetConstantPoolMemberString(const ConstantPoolMember& cpm){
@@ -300,7 +302,11 @@ const char* ConstantPoolMember::GetConstantPoolMemberString(const ConstantPoolMe
         case(16):{return "MethodType_info";}
         case(17):{return "Dynamic_info";}
         case(18):{return "InvokeDynamic_info";}
-        case(19):{return "";}
-        case(20):{return "";}
+        case(19):{return "Module_info";}
+        case(20):{return "Package_info";}
+        case(-1):{return "UnusedConstantPoolMember";}
+        default:{return "ERROR";}
     }
+}
+
 }
