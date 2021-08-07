@@ -1,4 +1,4 @@
-#include "cfdump/classfile.hpp"
+#include "cfdump/classfile_info.hpp"
 
 #include<string>
 #include "cfdump/constantpool.hpp"
@@ -10,16 +10,16 @@
 
 namespace cfd {
 
-ClassFile::ClassFile(){}
-ClassFile::ClassFile(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
-ClassFile::~ClassFile(){
+ClassFile_info::ClassFile_info(){}
+ClassFile_info::ClassFile_info(std::istream& istr, std::ostream& err){ReadFromBinaryStream(istr, err);}
+ClassFile_info::~ClassFile_info(){
     if(constant_pool != nullptr){delete constant_pool;}
     if(interface_indices != nullptr){delete[] interface_indices;}
     if(fields_info != nullptr){delete[] fields_info;}
     if(methods_info != nullptr){delete[] methods_info;}
     if(attributes_info != nullptr){delete[] attributes_info;}
 }
-void ClassFile::ReadFromBinaryStream(std::istream& istr, std::ostream& err)
+void ClassFile_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err)
 {
     header = iou::GetNextBEU32(istr, err);
     if(header != 0xCAFEBABE){err<<"ERROR: .class File Begins With \""<<std::hex<<header<<std::dec<<"\" instead of \"0xCAFEBABE\""<<std::endl;}
@@ -63,7 +63,7 @@ void ClassFile::ReadFromBinaryStream(std::istream& istr, std::ostream& err)
         }
     }
 }
-void ClassFile::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
+void ClassFile_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONUnsigned(ostr, ".class Version Major", major_version, formatting);
     iou::JSON::WriteJSONUnsigned(ostr, ".class Version Minor", minor_version, formatting);
     

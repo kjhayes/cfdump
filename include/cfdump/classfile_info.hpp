@@ -1,5 +1,5 @@
-#ifndef CFDUMP_CLASSFILE_HPP
-#define CFDUMP_CLASSFILE_HPP
+#ifndef CFDUMP_CLASSFILE_INFO_HPP
+#define CFDUMP_CLASSFILE_INFO_HPP
 
 #include<iostream>
 #include "iostream-util/ibinaryreadable.hpp"
@@ -13,7 +13,7 @@ class Field_info;
 class Method_info;
 class Attribute_info;
 
-class ClassFile : public iou::IBinaryReadable, public iou::IJSONWriteable {
+class ClassFile_info : public iou::IBinaryReadable, public iou::IJSONWriteable {
 public:
     uint32_t header;
     uint16_t minor_version, major_version;
@@ -37,9 +37,9 @@ public:
     uint16_t attributes_count;
     Attribute_info* attributes_info = nullptr;
 
-    ClassFile();
-    ClassFile(std::istream& istr, std::ostream& err = std::cerr);
-    ~ClassFile();
+    ClassFile_info();
+    ClassFile_info(std::istream& istr, std::ostream& err = std::cerr);
+    ~ClassFile_info();
 
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
     void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
