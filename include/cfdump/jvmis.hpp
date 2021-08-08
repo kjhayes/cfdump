@@ -5,8 +5,8 @@
 
 #include<stdint.h>
 #include "iostream-util/ibinaryreadable.hpp"
+#include "iostream-util/ibinarywriteable.hpp"
 #include "iostream-util/ijsonwriteable.hpp"
-#include<vector>
 #include<list>
 
 namespace cfd {
@@ -219,11 +219,12 @@ enum OPCODE {
     op_wide = 0xc4
 };
 
-class Instruction : public iou::IBinaryReadable, public iou::IJSONWriteable {
+class Instruction : public iou::IBinaryReadable, public iou::IJSONWriteable, public iou::IBinaryWriteable {
 public:
     virtual OPCODE Opcode() const = 0;
     virtual size_t ByteSize() const;
     virtual void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
+    virtual void WriteToBinaryStream(std::ostream& ostr) const override;
     virtual void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
     static Instruction* NewInstructionOfOpcode(const OPCODE& opcode);
     static const char* GetOPCODEString(const OPCODE& opcode);
@@ -233,24 +234,28 @@ class U8IndexedInstruction : public Instruction {
     uint8_t index;
     size_t ByteSize() const override;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
+    virtual void WriteToBinaryStream(std::ostream& ostr) const override;
     void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
 };
 class U16IndexedInstruction : public Instruction {
     uint16_t index;
     size_t ByteSize() const override;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
+    virtual void WriteToBinaryStream(std::ostream& ostr) const override;
     void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
 };
 class U16BranchedInstruction : public Instruction {
     uint16_t branch;
     size_t ByteSize() const override;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
+    virtual void WriteToBinaryStream(std::ostream& ostr) const override;
     void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
 };
 class U32BranchedInstruction : public Instruction {
     uint32_t branch;
     size_t ByteSize() const override;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
+    virtual void WriteToBinaryStream(std::ostream& ostr) const override;
     void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
 };
 
@@ -318,6 +323,7 @@ class bipush : public Instruction {
     OPCODE Opcode() const override {return OPCODE::op_bipush;}
     size_t ByteSize() const override;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
+    void WriteToBinaryStream(std::ostream& ostr) const override;
     void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
 };
 class breakpoint : public Instruction {
@@ -629,6 +635,7 @@ class iinc : public Instruction {
     OPCODE Opcode() const override {return OPCODE::op_iinc;}
     size_t ByteSize() const override;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
+    void WriteToBinaryStream(std::ostream& ostr) const override;
     void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
 };
 class iload : public U8IndexedInstruction {
@@ -668,6 +675,7 @@ class invokedynamic : public Instruction {
     OPCODE Opcode() const override {return OPCODE::op_invokedynamic;}
     size_t ByteSize() const override;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
+    void WriteToBinaryStream(std::ostream& ostr) const override;
     void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
 };
 class invokeinterface : public Instruction {
@@ -677,6 +685,7 @@ class invokeinterface : public Instruction {
     OPCODE Opcode() const override {return OPCODE::op_invokeinterface;}
     size_t ByteSize() const override;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
+    void WriteToBinaryStream(std::ostream& ostr) const override;
     void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
 };
 class invokespecial : public U16IndexedInstruction {
@@ -796,10 +805,11 @@ class lmul : public Instruction {
 class lneg : public Instruction {
     OPCODE Opcode() const override {return OPCODE::op_lneg;}
 };
-struct lookupswitch_pair : public iou::IBinaryReadable, public iou::IJSONWriteable {
+struct lookupswitch_pair : public iou::IBinaryReadable, public iou::IJSONWriteable, public iou::IBinaryWriteable {
     int32_t match;
     int32_t offset;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
+    void WriteToBinaryStream(std::ostream& ostr) const override;
     void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
 };
 class lookupswitch : public Instruction {
@@ -809,9 +819,10 @@ class lookupswitch : public Instruction {
     uint8_t padding_2;
     uint8_t padding_3;
     int32_t default_;
-    std::vector<lookupswitch_pair> pairs;
+    std::list<lookupswitch_pair> pairs;
     size_t ByteSize() const override;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
+    void WriteToBinaryStream(std::ostream& ostr) const override;
     void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
 };
 class lor : public Instruction {
@@ -865,6 +876,7 @@ class multianewarray : public Instruction {
     OPCODE Opcode() const override {return OPCODE::op_multianewarray;}
     size_t ByteSize() const override;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
+    void WriteToBinaryStream(std::ostream& ostr) const override;
     void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
 };
 class new_ : public U16IndexedInstruction {
@@ -875,6 +887,7 @@ class newarray : public Instruction {
     OPCODE Opcode() const override {return OPCODE::op_newarray;}
     size_t ByteSize() const override;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
+    void WriteToBinaryStream(std::ostream& ostr) const override;
     void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
 };
 class nop : public Instruction {
@@ -909,6 +922,7 @@ class sipush : public Instruction {
     OPCODE Opcode() const override {return OPCODE::op_sipush;}
     size_t ByteSize() const override;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
+    void WriteToBinaryStream(std::ostream& ostr) const override;
     void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
 };
 class swap : public Instruction {

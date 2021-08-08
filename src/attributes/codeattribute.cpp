@@ -2,10 +2,25 @@
 
 #include "cfdump/jvmis.hpp"
 #include "iostream-util/streamread.hpp"
+#include "iostream-util/streamwrite.hpp"
 #include "cfdump/jvmis.hpp"
 #include<string>
 
 namespace cfd {
+
+CodeAttribute::~CodeAttribute() {
+    for(auto iter = instructions.begin(); iter != instructions.end(); iter++){
+        if((*iter) != nullptr){
+            delete (*iter);
+        }
+    }
+}
+
+size_t CodeAttribute::GetLengthWithoutHeader() const {    
+    size_t code_length = jvmis::Instruction::GetCodeLength(instructions);
+    size_t exceptions_length = exceptiontable.size() * 8;
+    return (8 + code_length + 2 + exceptions_length + attribute_table.Length());
+}
 
 void CodeAttribute::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     attribute_length = iou::GetNextBEU32(istr, err);
@@ -27,17 +42,31 @@ void CodeAttribute::ReadFromBinaryStream(std::istream& istr, std::ostream& err) 
     }
     attribute_table.ReadFromBinaryStream(istr, err);
 }
-CodeAttribute::~CodeAttribute() {
-    for(auto iter = instructions.begin(); iter != instructions.end(); iter++){
-        if((*iter) != nullptr){
-            delete (*iter);
-        }
-    }
-}
+void CodeAttribute::WriteToBinaryStream(std::ostream& ostr) const {
+    iou::PutBEU16(ostr, AttributeNameIndexTable::last_set_table->Code);
+    
+    iou::PutBEU32(ostr, GetLengthWithoutHeader());
 
+    iou::PutBEU16(ostr, max_stack);
+    iou::PutBEU16(ostr, max_locals);
+    
+    size_t code_length = jvmis::Instruction::GetCodeLength(instructions);
+    if(code_length>0xFFFFFFFF){std::cerr<<"ERROR: ByteCode Inside Code Attribute Is Too Long To Write"<<std::endl;}
+    iou::PutBEU32(ostr, code_length);
+    for(auto iter = instructions.begin(); iter != instructions.end(); iter++){
+        (*iter)->WriteToBinaryStream(ostr);
+    }
+    size_t exceptions_length = exceptiontable.size() * 8;
+    if(exceptions_length>0xFFFF){std::cerr<<"ERROR: Too Many Exceptions In Code Attribute To Write"<<std::endl;}
+    iou::PutBEU16(ostr, exceptions_length);
+    for(auto iter = exceptiontable.begin(); iter != exceptiontable.end(); iter++){
+        (*iter).WriteToBinaryStream(ostr);
+    }
+    attribute_table.WriteToBinaryStream(ostr);
+}
 void CodeAttribute::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Attribute Name", "Code", formatting);
-    iou::JSON::WriteJSONUnsigned(ostr, "Name Index", attribute_name_index, formatting);
+    iou::JSON::WriteJSONUnsigned(ostr, "Name Index", attribute_name_index.Index(), formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "Byte Length", attribute_length, formatting, (instructions.size() <= 0));
     iou::JSON::WriteJSONUnsigned(ostr, "Max Stack", max_stack, formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "Max Locals", max_stack, formatting);

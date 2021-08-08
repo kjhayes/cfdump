@@ -5,11 +5,18 @@
 //#include "cfdump/constantpool.hpp"
 //#include "cfdump/constantpoolmember.hpp"
 #include "iostream-util/streamread.hpp"
+#include "iostream-util/streamwrite.hpp"
 #include "iostream-util/json.hpp"
 
 namespace cfd {
 
 Attribute_info::~Attribute_info() {if(info != nullptr) {delete[] info;}}
+
+size_t Attribute_info::GetLengthWithoutHeader() const {return attribute_length;}
+
+void Attribute_info::ResolveIndexReferences(ConstantPool* pool){
+    attribute_name_index.ResolveRead(pool);
+}
 
 void Attribute_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     attribute_length = iou::GetNextBEU32(istr, err);
@@ -20,9 +27,16 @@ void Attribute_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err)
         }
     }
 }
+void Attribute_info::WriteToBinaryStream(std::ostream& ostr) const {
+    iou::PutBEU16(ostr, attribute_name_index.Index());
+    iou::PutBEU32(ostr, attribute_length);
+    for(int i = 0; i<attribute_length; i++){
+        iou::PutU8(ostr, info[i]);
+    }
+}
 void Attribute_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Attribute Name", "Unknown", formatting);
-    iou::JSON::WriteJSONUnsigned(ostr, "Name Index", attribute_name_index, formatting);
+    iou::JSON::WriteJSONUnsigned(ostr, "Name Index", attribute_name_index.Index(), formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "Byte Length", attribute_length, formatting, (info==nullptr));
     if(info != nullptr){
         iou::JSON::BeginWriteJSONArray(ostr, "Data", formatting);
@@ -67,7 +81,7 @@ Attribute_info* Attribute_info::NewAttributeOfNameIndex(const uint16_t& index, c
     else {
         ret = new Attribute_info();
     }
-    ret->attribute_name_index = index;
+    ret->attribute_name_index.read_index = index;
     return ret;
 }
 

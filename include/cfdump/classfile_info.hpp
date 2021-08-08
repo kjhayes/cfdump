@@ -5,17 +5,19 @@
 #include "cfdump/attributetable.hpp"
 #include "iostream-util/ibinaryreadable.hpp"
 #include "iostream-util/ijsonwriteable.hpp"
+#include "iostream-util/ibinarywriteable.hpp"
 #include "cfdump/classaccessflags.hpp"
 #include "cfdump/attributenameindextable.hpp"
+#include "cfdump/constantpoolmember.hpp"
+#include<list>
 
 namespace cfd {
 
-class ConstantPool;
 class Field_info;
 class Method_info;
 class Attribute_info;
 
-class ClassFile_info : public iou::IBinaryReadable, public iou::IJSONWriteable {
+class ClassFile_info : public iou::IBinaryReadable, public iou::IJSONWriteable, public iou::IBinaryWriteable {
 public:
     uint32_t header;
     uint16_t minor_version, major_version;
@@ -25,17 +27,14 @@ public:
 
     ClassAccessFlags access_flags;
 
-    uint16_t this_class_index;
-    uint16_t super_class_index;
+    ConstantPoolReference this_class_index;
+    ConstantPoolReference super_class_index;
 
-    uint16_t interfaces_count;
-    uint16_t* interface_indices = nullptr;
+    std::list<ConstantPoolReference> interfaces;
 
-    uint16_t fields_count;
-    Field_info* fields_info = nullptr;
+    std::list<Field_info> fields;
 
-    uint16_t methods_count;
-    Method_info* methods_info = nullptr;
+    std::list<Method_info> methods;
 
     AttributeTable attribute_table;
 
@@ -43,7 +42,10 @@ public:
     ClassFile_info(std::istream& istr, std::ostream& err = std::cerr);
     ~ClassFile_info();
 
+    void ResolveIndexReferences();
+
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
+    void WriteToBinaryStream(std::ostream& ostr) const override;
     void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
 };
 

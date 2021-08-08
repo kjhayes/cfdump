@@ -3,27 +3,29 @@
 
 #include "iostream-util/ibinaryreadable.hpp"
 #include "iostream-util/ijsonwriteable.hpp"
+#include "iostream-util/ibinarywriteable.hpp"
+
+#include<list>
 
 namespace cfd {
 
 class ConstantPoolMember;
 
-class ConstantPool : public iou::IBinaryReadable, public iou::IJSONWriteable {
+class ConstantPool : public iou::IBinaryReadable, public iou::IJSONWriteable, public iou::IBinaryWriteable {
 private:
-    int count;
-    int number_of_members;
-    ConstantPoolMember** members;
+    std::list<ConstantPoolMember*> members;
 public:
     ConstantPool(std::istream& istr, std::ostream& err = std::cerr);
     ~ConstantPool();
 
-    ConstantPoolMember* GetMember_PoolIndex(const int& index);
-    ConstantPoolMember* GetMember_ArrayIndex(const int& index);
-    
-    int GetCount();
-    int GetNumberOfMembers();
+    uint16_t GetNumberOfEntries() const;
+    uint16_t GetCount() const;
+
+    uint16_t GetIndexOfMember(ConstantPoolMember* member) const;
+    ConstantPoolMember* GetMemberAtIndex(const uint16_t& index) const;
 
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
+    void WriteToBinaryStream(std::ostream& ostr) const override;
     void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
 };
 

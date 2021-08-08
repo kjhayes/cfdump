@@ -2,6 +2,7 @@
 
 #include "iostream-util/json.hpp"
 #include "iostream-util/streamread.hpp"
+#include "iostream-util/streamwrite.hpp"
 /*
 aaload
 aastore
@@ -214,6 +215,9 @@ namespace jvmis{
 
 size_t Instruction::ByteSize() const {return 1;}
 void Instruction::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {}
+void Instruction::WriteToBinaryStream(std::ostream& ostr) const {
+    iou::PutU8(ostr, Opcode());
+}
 void Instruction::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Opcode", GetOPCODEString(Opcode()), formatting, true);
 }
@@ -229,6 +233,10 @@ size_t U8IndexedInstruction::ByteSize() const {return 2;}
 void U8IndexedInstruction::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     index = iou::GetNextU8(istr, err);
 }
+void U8IndexedInstruction::WriteToBinaryStream(std::ostream& ostr) const {
+    iou::PutU8(ostr, Opcode());
+    iou::PutU8(ostr, index);
+}
 void U8IndexedInstruction::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Opcode", GetOPCODEString(Opcode()), formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "Index", index, formatting, true);
@@ -237,6 +245,10 @@ void U8IndexedInstruction::WriteJSON(std::ostream& ostr, iou::JSONFormatting for
 size_t U16IndexedInstruction::ByteSize() const {return 3;}
 void U16IndexedInstruction::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     index = iou::GetNextBEU16(istr, err);
+}
+void U16IndexedInstruction::WriteToBinaryStream(std::ostream& ostr) const {
+    iou::PutU8(ostr, Opcode());
+    iou::PutBEU16(ostr, index);
 }
 void U16IndexedInstruction::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Opcode", GetOPCODEString(Opcode()), formatting);
@@ -247,6 +259,10 @@ size_t U16BranchedInstruction::ByteSize() const {return 3;}
 void U16BranchedInstruction::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     branch = iou::GetNextBEU16(istr, err);
 }
+void U16BranchedInstruction::WriteToBinaryStream(std::ostream& ostr) const {
+    iou::PutU8(ostr, Opcode());
+    iou::PutBEU16(ostr, branch);
+}
 void U16BranchedInstruction::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Opcode", GetOPCODEString(Opcode()), formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "Branch", branch, formatting, true);
@@ -255,6 +271,10 @@ void U16BranchedInstruction::WriteJSON(std::ostream& ostr, iou::JSONFormatting f
 size_t U32BranchedInstruction::ByteSize() const {return 4;}
 void U32BranchedInstruction::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     branch = iou::GetNextBEU32(istr, err);
+}
+void U32BranchedInstruction::WriteToBinaryStream(std::ostream& ostr) const {
+    iou::PutU8(ostr, Opcode());
+    iou::PutBEU32(ostr, branch);
 }
 void U32BranchedInstruction::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Opcode", GetOPCODEString(Opcode()), formatting);
@@ -265,6 +285,10 @@ size_t bipush::ByteSize() const {return 2;}
 void bipush::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     byte = iou::GetNextU8(istr, err);
 }
+void bipush::WriteToBinaryStream(std::ostream& ostr) const {
+    iou::PutU8(ostr, Opcode());
+    iou::PutU8(ostr, byte);
+}
 void bipush::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Opcode", GetOPCODEString(Opcode()), formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "Byte", byte, formatting, true);
@@ -274,6 +298,11 @@ size_t iinc::ByteSize() const {return 3;}
 void iinc::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     index = iou::GetNextU8(istr, err);
     byte = iou::GetNextU8(istr, err);
+}
+void iinc::WriteToBinaryStream(std::ostream& ostr) const {
+    iou::PutU8(ostr, Opcode());
+    iou::PutU8(ostr, index);
+    iou::PutU8(ostr, byte);
 }
 void iinc::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Opcode", GetOPCODEString(Opcode()), formatting);
@@ -286,6 +315,13 @@ void invokedynamic::ReadFromBinaryStream(std::istream& istr, std::ostream& err) 
     index = iou::GetNextBEU16(istr, err);
     zero_1 = iou::GetNextU8(istr, err);
     zero_2 = iou::GetNextU8(istr, err);
+}
+void invokedynamic::WriteToBinaryStream(std::ostream& ostr) const {
+    iou::PutU8(ostr, Opcode());
+    iou::PutBEU16(ostr, index);
+    iou::PutU8(ostr, zero_1);
+    iou::PutU8(ostr, zero_2);
+    
 }
 void invokedynamic::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Opcode", GetOPCODEString(Opcode()), formatting);
@@ -300,6 +336,12 @@ void invokeinterface::ReadFromBinaryStream(std::istream& istr, std::ostream& err
     count = iou::GetNextU8(istr, err);
     zero = iou::GetNextU8(istr, err);
 }
+void invokeinterface::WriteToBinaryStream(std::ostream& ostr) const {
+    iou::PutU8(ostr, Opcode());
+    iou::PutBEU16(ostr, index);
+    iou::PutU8(ostr, count);
+    iou::PutU8(ostr, zero);
+}
 void invokeinterface::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Opcode", GetOPCODEString(Opcode()), formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "Index", index, formatting);
@@ -310,6 +352,10 @@ void invokeinterface::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatti
 void lookupswitch_pair::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     match = iou::GetNextBEU32(istr, err);
     offset = iou::GetNextBEU32(istr, err);
+}
+void lookupswitch_pair::WriteToBinaryStream(std::ostream& ostr) const {
+    iou::PutBEU32(ostr, match);
+    iou::PutBEU32(ostr, offset);
 }
 void lookupswitch_pair::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONSigned(ostr, "Match", match, formatting);
@@ -324,8 +370,8 @@ void lookupswitch::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
         padding_1 = iou::GetNextU8(istr, err);
         if(number_of_padding_bytes>1){
             padding_2 = iou::GetNextU8(istr, err);
-            if(number_of_padding_bytes>2)
-            {padding_3 = iou::GetNextU8(istr, err);
+            if(number_of_padding_bytes>2){
+                padding_3 = iou::GetNextU8(istr, err);
             }
         }
     }
@@ -336,6 +382,25 @@ void lookupswitch::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
         lookupswitch_pair pair;
         pair.ReadFromBinaryStream(istr, err);
         pairs.push_back(pair);
+    }
+}
+void lookupswitch::WriteToBinaryStream(std::ostream& ostr) const {
+    iou::PutU8(ostr, Opcode());
+    std::streampos pos = ostr.tellp();
+    uint8_t number_of_padding_bytes = pos % 4;
+    if(number_of_padding_bytes>0){
+        iou::PutU8(ostr, padding_1);
+        if(number_of_padding_bytes>1){
+            iou::PutU8(ostr, padding_2);
+            if(number_of_padding_bytes>2){
+                iou::PutU8(ostr, padding_3);
+            }
+        }
+    }
+    iou::PutBEU32(ostr, default_);
+    iou::PutBEU32(ostr, pairs.size());
+    for(auto iter = pairs.begin(); iter != pairs.end(); iter++){
+        (*iter).WriteToBinaryStream(ostr);
     }
 }
 void lookupswitch::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
@@ -356,8 +421,10 @@ void lookupswitch::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting)
     iou::JSON::WriteJSONSigned(ostr, "Number Of Pairs", npairs, formatting, (npairs <= 0));
     if(npairs > 0){
         iou::JSON::BeginWriteJSONArray(ostr, "Pairs", formatting);
-        for(int i = 0; i < npairs; i++){
-            iou::JSON::WriteJSONArrayObject(ostr, pairs[i], formatting, i == (npairs-1));
+        int i = 0;
+        for(auto iter = pairs.begin(); iter != pairs.end(); iter++){
+            iou::JSON::WriteJSONArrayObject(ostr, (*iter), formatting, i == (npairs-1));
+            i++;
         }
         iou::JSON::EndWriteJSONArray(ostr, formatting, true);
     }
@@ -367,6 +434,11 @@ size_t multianewarray::ByteSize() const {return 4;}
 void multianewarray::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     index = iou::GetNextBEU16(istr, err);
     dimensions = iou::GetNextU8(istr, err);
+}
+void multianewarray::WriteToBinaryStream(std::ostream& ostr) const {
+    iou::PutU8(ostr, Opcode());
+    iou::PutBEU16(ostr, index);
+    iou::PutU8(ostr, dimensions);
 }
 void multianewarray::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Opcode", GetOPCODEString(Opcode()), formatting);
@@ -378,6 +450,10 @@ size_t newarray::ByteSize() const {return 2;}
 void newarray::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     atype = iou::GetNextU8(istr, err);
 }
+void newarray::WriteToBinaryStream(std::ostream& ostr) const {
+    iou::PutU8(ostr, Opcode());
+    iou::PutU8(ostr, atype);
+}
 void newarray::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Opcode", GetOPCODEString(Opcode()), formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "AType", atype, formatting, true);
@@ -385,7 +461,11 @@ void newarray::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) con
 
 size_t sipush::ByteSize() const {return 3;}
 void sipush::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
-    short_ = iou::GetNextU8(istr, err);
+    short_ = iou::GetNextBEU16(istr, err);
+}
+void sipush::WriteToBinaryStream(std::ostream& ostr) const {
+    iou::PutU8(ostr, Opcode());
+    iou::PutBEU16(ostr, short_);
 }
 void sipush::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Opcode", GetOPCODEString(Opcode()), formatting);

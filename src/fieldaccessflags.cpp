@@ -1,6 +1,7 @@
 #include "cfdump/fieldaccessflags.hpp"
 
 #include "iostream-util/streamread.hpp"
+#include "iostream-util/streamwrite.hpp"
 #include "iostream-util/json.hpp"
 
 namespace cfd {
@@ -20,7 +21,9 @@ const char* FieldAccessFlags::FieldAccessStrings[9] = {
 void FieldAccessFlags::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     flags = iou::GetNextBEU16(istr, err);
 }
-
+void FieldAccessFlags::WriteToBinaryStream(std::ostream& ostr) const {
+    iou::PutBEU16(ostr, flags);
+}
 void FieldAccessFlags::WriteJSON(std::ostream& ostr, const iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONHex(ostr, "Value", flags, formatting);
     iou::JSON::BeginWriteJSONStringStreamed(ostr, "Decoded", formatting);

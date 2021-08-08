@@ -2,6 +2,7 @@
 
 #include "iostream-util/streamread.hpp"
 #include "iostream-util/json.hpp"
+#include "iostream-util/streamwrite.hpp"
 
 namespace cfd {
 
@@ -20,7 +21,9 @@ const char* ClassAccessFlags::ClassAccessStrings[9] = {
 void ClassAccessFlags::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
     flags = iou::GetNextBEU16(istr, err);
 }
-
+void ClassAccessFlags::WriteToBinaryStream(std::ostream& ostr) const {
+    iou::PutBEU16(ostr, flags);
+}
 void ClassAccessFlags::WriteJSON(std::ostream& ostr, const iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONHex(ostr, "Value", flags, formatting);
     iou::JSON::BeginWriteJSONStringStreamed(ostr, "Decoded", formatting);

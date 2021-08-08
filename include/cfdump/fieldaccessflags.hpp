@@ -3,11 +3,12 @@
 
 #include<iostream>
 #include "iostream-util/ibinaryreadable.hpp"
+#include "iostream-util/ibinarywriteable.hpp"
 #include "iostream-util/ijsonwriteable.hpp"
 
 namespace cfd {
 
-class FieldAccessFlags : public iou::IBinaryReadable, public iou::IJSONWriteable {
+class FieldAccessFlags : public iou::IBinaryReadable, public iou::IJSONWriteable, public iou::IBinaryWriteable {
 public:
     uint16_t flags;
 
@@ -25,6 +26,7 @@ public:
     static const char* FieldAccessStrings[9];
     
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;
+    void WriteToBinaryStream(std::ostream& ostr) const override;
     void WriteJSON(std::ostream& ostr, const iou::JSONFormatting formatting) const override;
 };
 
