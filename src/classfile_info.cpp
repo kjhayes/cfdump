@@ -51,7 +51,6 @@ void ClassFile_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err)
     if(methods_count > 0){
         methods_info = new Method_info[methods_count];
         for(int i = 0; i<methods_count; i++){
-            methods_info[i].anitable = &attribute_name_index_table;
             methods_info[i].ReadFromBinaryStream(istr, err);
         }
     }   
