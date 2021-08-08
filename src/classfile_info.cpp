@@ -17,7 +17,6 @@ ClassFile_info::~ClassFile_info(){
     if(interface_indices != nullptr){delete[] interface_indices;}
     if(fields_info != nullptr){delete[] fields_info;}
     if(methods_info != nullptr){delete[] methods_info;}
-    if(attributes_info != nullptr){delete[] attributes_info;}
 }
 void ClassFile_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err)
 {
@@ -27,6 +26,7 @@ void ClassFile_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err)
     minor_version = iou::GetNextBEU16(istr, err);
     major_version = iou::GetNextBEU16(istr, err);
     constant_pool = new ConstantPool(istr, err); 
+    attribute_name_index_table.SetFromConstantPool(*constant_pool);
     
     access_flags.ReadFromBinaryStream(istr, err);
     
@@ -34,7 +34,6 @@ void ClassFile_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err)
     super_class_index = iou::GetNextBEU16(istr, err);   
     
     interfaces_count = iou::GetNextBEU16(istr, err);
-    
     if(interfaces_count > 0){
         interface_indices = new uint16_t[interfaces_count];
         for(int i = 0; i<interfaces_count; i++){
@@ -52,16 +51,11 @@ void ClassFile_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err)
     if(methods_count > 0){
         methods_info = new Method_info[methods_count];
         for(int i = 0; i<methods_count; i++){
+            methods_info[i].anitable = &attribute_name_index_table;
             methods_info[i].ReadFromBinaryStream(istr, err);
         }
     }   
-    attributes_count = iou::GetNextBEU16(istr, err);
-    if(attributes_count > 0){
-        attributes_info = new Attribute_info[attributes_count];
-        for(int i = 0; i<attributes_count; i++){
-            attributes_info[i].ReadFromBinaryStream(istr, err);
-        }
-    }
+    attribute_table.ReadFromBinaryStream(istr, err);    
 }
 void ClassFile_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONUnsigned(ostr, ".class Version Major", major_version, formatting);
@@ -85,10 +79,7 @@ void ClassFile_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formattin
     for(int i = 0; i < methods_count; i++){
         iou::JSON::WriteJSONObject(ostr, (std::string("Method ")+std::to_string(i)).c_str(), methods_info[i], formatting);
     }
-    iou::JSON::WriteJSONUnsigned(ostr, "Number Of Attributes", attributes_count, formatting);
-    for(int i = 0; i < attributes_count; i++){
-        iou::JSON::WriteJSONObject(ostr, (std::string("Attribute ")+std::to_string(i)).c_str(), attributes_info[i], formatting, (i == (attributes_count-1)));
-    }
+    iou::JSON::WriteJSONObject(ostr, "Attributes", attribute_table, formatting, true);
 }
 
 }

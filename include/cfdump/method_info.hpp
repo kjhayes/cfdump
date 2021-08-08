@@ -10,15 +10,17 @@
 namespace cfd {
 
 class Attribute_info;
+class AttributeNameIndexTable;
 
 class Method_info : public iou::IBinaryReadable, public iou::IJSONWriteable {    
+public:
     MethodAccessFlags access_flags;
     uint16_t name_index;
     uint16_t descriptor_index;
     uint16_t attributes_count;
-    Attribute_info* attributes;
+    AttributeNameIndexTable* anitable = nullptr;
+    Attribute_info** attributes;
 
-public:
     Method_info();
     Method_info(std::istream& istr, std::ostream& err = std::cerr);
     ~Method_info();

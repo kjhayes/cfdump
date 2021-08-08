@@ -7,6 +7,7 @@
 #include "iostream-util/ibinaryreadable.hpp"
 #include "iostream-util/ijsonwriteable.hpp"
 #include<vector>
+#include<list>
 
 namespace cfd {
 namespace jvmis{
@@ -226,6 +227,7 @@ public:
     virtual void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
     static Instruction* NewInstructionOfOpcode(const OPCODE& opcode);
     static const char* GetOPCODEString(const OPCODE& opcode);
+    static size_t GetCodeLength(const std::list<Instruction*>& code);
 };
 class U8IndexedInstruction : public Instruction {
     uint8_t index;
@@ -806,7 +808,7 @@ class lookupswitch : public Instruction {
     uint8_t padding_1;
     uint8_t padding_2;
     uint8_t padding_3;
-    int32_t default;
+    int32_t default_;
     std::vector<lookupswitch_pair> pairs;
     size_t ByteSize() const override;
     void ReadFromBinaryStream(std::istream& istr, std::ostream& err = std::cerr) override;

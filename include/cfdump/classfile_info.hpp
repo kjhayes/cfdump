@@ -2,9 +2,11 @@
 #define CFDUMP_CLASSFILE_INFO_HPP
 
 #include<iostream>
+#include "cfdump/attributetable.hpp"
 #include "iostream-util/ibinaryreadable.hpp"
 #include "iostream-util/ijsonwriteable.hpp"
 #include "cfdump/classaccessflags.hpp"
+#include "cfdump/attributenameindextable.hpp"
 
 namespace cfd {
 
@@ -19,6 +21,7 @@ public:
     uint16_t minor_version, major_version;
 
     ConstantPool* constant_pool;
+    AttributeNameIndexTable attribute_name_index_table;
 
     ClassAccessFlags access_flags;
 
@@ -34,8 +37,7 @@ public:
     uint16_t methods_count;
     Method_info* methods_info = nullptr;
 
-    uint16_t attributes_count;
-    Attribute_info* attributes_info = nullptr;
+    AttributeTable attribute_table;
 
     ClassFile_info();
     ClassFile_info(std::istream& istr, std::ostream& err = std::cerr);

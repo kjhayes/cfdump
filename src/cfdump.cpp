@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
     classfile.ReadFromBinaryStream(istr);
     iou::JSONFormatting format;
     format.spacing = 0;
-
+    format.write_arrays_inline = false;
     if(argc > 2){
         std::ofstream file(argv[2]);
         if(!file.is_open()){
