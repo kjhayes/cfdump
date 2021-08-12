@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.19)
 
 project(CFDUMP)
 
+set(CMAKE_CXX_STANDARD 17)
+
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/iostream-util/include)
 

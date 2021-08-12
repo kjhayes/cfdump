@@ -8,11 +8,13 @@
 #include<cstring>
 
 namespace cfd {
+ConstantPoolReference::ConstantPoolReference():ptr(nullptr),pool(nullptr),read_index(0){}
 
 uint16_t ConstantPoolReference::Index() const {
-    if((pool == nullptr) || (ptr == nullptr)) {return read_index;}
+    if((pool == nullptr) || (ptr == nullptr)) {std::cout<<"Index() Called But References Unresolved"<<std::endl;return read_index;}
     else{
-        return pool->GetIndexOfMember(ptr);
+        uint16_t index = pool->GetIndexOfMember(ptr);
+        return index;
     }
 }
 void ConstantPoolReference::ResolveRead(ConstantPool* pool) {

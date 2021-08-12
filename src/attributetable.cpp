@@ -11,22 +11,26 @@
 namespace cfd {
 
 AttributeTable::~AttributeTable() {
-    for(auto iter = attributes_info.begin(); iter != attributes_info.end(); iter++){
-        delete (*iter);
+    for(int i = 0; i < attributes_info.size(); i++){
+        delete attributes_info[i];
     }
 }
 
 size_t AttributeTable::Length() const {
     size_t s = 2;
-    for(auto iter = attributes_info.begin(); iter != attributes_info.end(); iter++){
-        s += (6+((*iter)->GetLengthWithoutHeader()));
+    for(int i = 0; i < attributes_info.size(); i++){
+        s += (6+(attributes_info[i])->GetLengthWithoutHeader());
     }
     return s;
 }
 
 void AttributeTable::ResolveIndexReferences(ConstantPool* pool) {
-    for(auto iter = attributes_info.begin(); iter != attributes_info.end(); iter++){
-        (*iter)->ResolveIndexReferences(pool);
+    for(int i = 0; i < attributes_info.size(); i++){
+        std::cout<<"Called"<<std::endl;
+        std::cout<<"NULL ATTR: "<<(attributes_info[i] == nullptr)<<std::endl;
+        std::cout<<"NULL POOL: "<<(pool == nullptr)<<std::endl;
+        attributes_info[i]->ResolveIndexReferences(pool);
+        std::cout<<"Returned"<<std::endl;
     }
 }
 
@@ -36,6 +40,7 @@ void AttributeTable::ReadFromBinaryStream(std::istream& istr, std::ostream& err)
         for(int i = 0; i<attributes_count; i++){
             uint16_t attr_name_index = iou::GetNextBEU16(istr, err);
             Attribute_info* curr = Attribute_info::NewAttributeOfNameIndex(attr_name_index, *AttributeNameIndexTable::last_set_table);
+            curr->attribute_name_index.read_index = attr_name_index;
             curr->ReadFromBinaryStream(istr, err);
             attributes_info.push_back(curr);
         }
@@ -44,21 +49,24 @@ void AttributeTable::ReadFromBinaryStream(std::istream& istr, std::ostream& err)
 void AttributeTable::WriteToBinaryStream(std::ostream& ostr) const {
     if(attributes_info.size() > 0xFFFF){std::cerr<<"ERROR: Too Many Attributes To Write!!!"<<std::endl;}
     iou::PutBEU16(ostr, attributes_info.size());
-    for(auto iter = attributes_info.begin(); iter != attributes_info.end(); iter++){
-        (*iter)->WriteToBinaryStream(ostr);
+    for(int i = 0; i < attributes_info.size(); i++){
+        attributes_info[i]->WriteToBinaryStream(ostr);
     }
 }
 void AttributeTable::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
+    std::cout<<"Begin Writing Attr Table"<<std::endl;
     iou::JSON::WriteJSONUnsigned(ostr, "Attribute Count", attributes_info.size(), formatting, (attributes_info.size() <= 0));
     if(attributes_info.size() > 0) {
         iou::JSON::BeginWriteJSONArray(ostr, "Attributes", formatting);
-        int i = 0;
-        for(auto iter = attributes_info.begin(); iter != attributes_info.end(); iter++){
-            iou::JSON::WriteJSONArrayObject(ostr, *(*iter), formatting, (i == (attributes_info.size() - 1)));
-            i++;
+        for(int i = 0; i < attributes_info.size(); i++){
+            std::cout<<"I: "<<i<<std::endl;
+            std::cout<<"NULL: "<<(attributes_info[i] == nullptr)<<std::endl;
+            iou::JSON::WriteJSONArrayObject(ostr, attributes_info[i], formatting, (i == (attributes_info.size() - 1)));
+            std::cout<<"POST"<<std::endl;
         }
         iou::JSON::EndWriteJSONArray(ostr, formatting, true);
     }   
+    std::cout<<"End Writing Attr Table"<<std::endl;
 }
 
 }

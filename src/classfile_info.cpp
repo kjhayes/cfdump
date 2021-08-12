@@ -41,37 +41,32 @@ void ClassFile_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err)
     major_version = iou::GetNextBEU16(istr, err);
     constant_pool = new ConstantPool(istr, err); 
     attribute_name_index_table.SetFromConstantPool(*constant_pool);
-    
     access_flags.ReadFromBinaryStream(istr, err);
     
     this_class_index.read_index = iou::GetNextBEU16(istr, err);
-    super_class_index.read_index = iou::GetNextBEU16(istr, err);   
-    
+    super_class_index.read_index = iou::GetNextBEU16(istr, err);
     uint16_t interfaces_count = iou::GetNextBEU16(istr, err);
     if(interfaces_count > 0){
         for(int i = 0; i<interfaces_count; i++){
-            ConstantPoolReference ref;
-            ref.read_index = iou::GetNextBEU16(istr, err);
-            interfaces.push_back(ref);
+            interfaces.emplace_back();
+            interfaces.back().read_index = iou::GetNextBEU16(istr, err);
         }
     }   
     uint16_t fields_count = iou::GetNextBEU16(istr, err);
     if(fields_count > 0){
         for(int i = 0; i<fields_count; i++){
-            Field_info field;
-            field.ReadFromBinaryStream(istr, err);
-            fields.push_back(field);
+            fields.emplace_back();
+            fields.back().ReadFromBinaryStream(istr, err);
         }
     }
     uint16_t methods_count = iou::GetNextBEU16(istr, err);
     if(methods_count > 0){
         for(int i = 0; i<methods_count; i++){
-            Method_info method;
-            method.ReadFromBinaryStream(istr, err);
-            methods.push_back(method);
+            methods.emplace_back();
+            methods.back().ReadFromBinaryStream(istr, err);
         }
     }   
-    attribute_table.ReadFromBinaryStream(istr, err);    
+    attribute_table.ReadFromBinaryStream(istr, err);
     ResolveIndexReferences();
 }
 void ClassFile_info::WriteToBinaryStream(std::ostream& ostr) const {

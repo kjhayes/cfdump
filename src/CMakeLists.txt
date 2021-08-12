@@ -14,5 +14,4 @@ add_library(${CMAKE_PROJECT_NAME} STATIC
     attribute_info.cpp 
     attributenameindextable.cpp
     attributetable.cpp
-    attributes/codeattribute.cpp
     )

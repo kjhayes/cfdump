@@ -5,7 +5,7 @@
 #include "iostream-util/ijsonwriteable.hpp"
 #include "iostream-util/ibinarywriteable.hpp"
 #include "iostream-util/ibinaryreadable.hpp"
-#include<list>
+#include<vector>
 
 namespace cfd {
 
@@ -15,7 +15,7 @@ class ConstantPool;
 class AttributeTable : public iou::IBinaryReadable, public iou::IJSONWriteable, public iou::IBinaryWriteable {
 public:
     //uint16_t attributes_count;
-    std::list<Attribute_info*> attributes_info;
+    std::vector<Attribute_info*> attributes_info;
 
     ~AttributeTable();
     

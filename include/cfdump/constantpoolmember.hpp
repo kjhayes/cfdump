@@ -15,9 +15,11 @@ class ConstantPoolMember;
 
 class ConstantPoolReference {
 public:
-    ConstantPoolMember* ptr = nullptr;
-    ConstantPool* pool = nullptr;
-    uint16_t read_index = 0;
+    ConstantPoolMember* ptr;
+    ConstantPool* pool;
+    uint16_t read_index;
+
+    ConstantPoolReference();
 
     void ResolveRead(ConstantPool* pool);
     uint16_t Index() const;

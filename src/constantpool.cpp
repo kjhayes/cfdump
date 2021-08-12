@@ -32,19 +32,20 @@ uint16_t ConstantPool::GetCount() const {
 uint16_t ConstantPool::GetIndexOfMember(ConstantPoolMember* member) const {
     int i = 1;
     for(auto iter = members.begin(); iter != members.end(); iter++){
-        if(member = (*iter)){return i;}
+        if(member == (*iter)){return i;}
         else{
-            i+=((*iter)->NumberOfCPEntriesTaken());
+            i += ((*iter)->NumberOfCPEntriesTaken());
         }
     }
     return 0;
 }
 ConstantPoolMember* ConstantPool::GetMemberAtIndex(const uint16_t& index) const {
+    if(index > GetNumberOfEntries()){std::cerr<<"ERROR: Trying To Access Index: ("<<index<<") Of A Constant Pool With Only ("<<GetNumberOfEntries()<<"Entries."<<std::endl;}
     uint16_t i = 1;
     for(auto iter = members.begin(); iter != members.end(); iter++){
         if(index == i){return (*iter);}
         else{
-            i += (*iter)->NumberOfCPEntriesTaken();
+            i += ((*iter)->NumberOfCPEntriesTaken());
         }
     }
     return nullptr;
@@ -78,7 +79,7 @@ void ConstantPool::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting)
     uint16_t i = 1;
     uint16_t count = GetCount();
     for(auto iter = members.begin(); iter != members.end(); iter++){
-        iou::JSON::WriteJSONObject(ostr, (std::string("Index ")+std::to_string(i+1)).c_str(), *(*iter), formatting, (i == (count-1)));
+        iou::JSON::WriteJSONObject(ostr, (std::string("Index ")+std::to_string(i)).c_str(), *(*iter), formatting, (i == (count-1)));
         i += (*iter)->NumberOfCPEntriesTaken();
     }
 }
