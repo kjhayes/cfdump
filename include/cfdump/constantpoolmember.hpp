@@ -13,8 +13,10 @@ typedef std::string MUTF8String;
 class ConstantPool;
 class ConstantPoolMember;
 
-class ConstantPoolReference {
+class ConstantPoolReference : public iou::IJSONWriteable {
 public:
+    static bool write_resolved_json;
+
     ConstantPoolMember* ptr;
     ConstantPool* pool;
     uint16_t read_index;
@@ -23,6 +25,8 @@ public:
 
     void ResolveRead(ConstantPool* pool);
     uint16_t Index() const;
+
+    void WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const override;
 };
 
 class ConstantPoolMember : public iou::IBinaryReadable, public iou::IJSONWriteable, public iou::IBinaryWriteable {

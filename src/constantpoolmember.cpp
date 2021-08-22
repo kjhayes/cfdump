@@ -8,7 +8,22 @@
 #include<cstring>
 
 namespace cfd {
+
+bool ConstantPoolReference::write_resolved_json = true;
 ConstantPoolReference::ConstantPoolReference():ptr(nullptr),pool(nullptr),read_index(0){}
+void ConstantPoolReference::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
+    if(write_resolved_json){
+    if((pool == nullptr) || (ptr == nullptr)) {iou::JSON::WriteJSONUnsigned(ostr, "Read Index", read_index, formatting, true); return;}
+    else{
+        uint16_t i = Index();
+        iou::JSON::WriteJSONUnsigned(ostr, "Constant Pool Index", i, formatting, false);
+        iou::JSON::WriteJSONObject(ostr, "Constant Pool Member", pool->GetMemberAtIndex(i), formatting, true);
+    }
+    }
+    else{
+        iou::JSON::WriteJSONUnsigned(ostr, "Index", Index(), formatting, true);
+    }
+}
 
 uint16_t ConstantPoolReference::Index() const {
     if((pool == nullptr) || (ptr == nullptr)) {std::cout<<"Index() Called But References Unresolved"<<std::endl;return read_index;}
@@ -137,7 +152,7 @@ void Class_info::ReadFromBinaryStream(std::istream& istr, std::ostream& err) {
 }
 void Class_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
-    iou::JSON::WriteJSONUnsigned(ostr, "Name Index", name_index.Index(), formatting, true);
+    iou::JSON::WriteJSONObject(ostr, "Name", name_index, formatting, true);
 }
 
 //String_info
@@ -157,7 +172,7 @@ void String_info::WriteToBinaryStream(std::ostream& ostr) const {
 }
 void String_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
-    iou::JSON::WriteJSONUnsigned(ostr, "String Index", string_index.Index(), formatting, true);
+    iou::JSON::WriteJSONObject(ostr, "String", string_index, formatting, true);
 }
 
 //Fieldref_info::
@@ -180,8 +195,8 @@ void Fieldref_info::WriteToBinaryStream(std::ostream& ostr) const {
 }
 void Fieldref_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
-    iou::JSON::WriteJSONUnsigned(ostr, "Class Index", class_index.Index(), formatting);
-    iou::JSON::WriteJSONUnsigned(ostr, "NameAndType Index", nameandtype_index.Index(), formatting, true);
+    iou::JSON::WriteJSONObject(ostr, "Class", class_index, formatting);
+    iou::JSON::WriteJSONObject(ostr, "NameAndType", nameandtype_index, formatting, true);
 }
 
 //Methodref_info
@@ -204,8 +219,8 @@ void Methodref_info::WriteToBinaryStream(std::ostream& ostr) const {
 }
 void Methodref_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
-    iou::JSON::WriteJSONUnsigned(ostr, "Class Index", class_index.Index(), formatting);
-    iou::JSON::WriteJSONUnsigned(ostr, "NameAndType Index", nameandtype_index.Index(), formatting, true);
+    iou::JSON::WriteJSONObject(ostr, "Class", class_index, formatting);
+    iou::JSON::WriteJSONObject(ostr, "NameAndType", nameandtype_index, formatting, true);
 }
 
 //InterfaceMethodref_info
@@ -228,8 +243,8 @@ void InterfaceMethodref_info::WriteToBinaryStream(std::ostream& ostr) const {
 }
 void InterfaceMethodref_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
-    iou::JSON::WriteJSONUnsigned(ostr, "Class Index", class_index.Index(), formatting);
-    iou::JSON::WriteJSONUnsigned(ostr, "NameAndType Index", nameandtype_index.Index(), formatting, true);
+    iou::JSON::WriteJSONObject(ostr, "Class Index", class_index, formatting);
+    iou::JSON::WriteJSONObject(ostr, "NameAndType Index", nameandtype_index, formatting, true);
 }
 
 //NameAndType_info
@@ -252,8 +267,8 @@ void NameAndType_info::WriteToBinaryStream(std::ostream& ostr) const {
 }
 void NameAndType_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
-    iou::JSON::WriteJSONUnsigned(ostr, "Name Index", name_index.Index(), formatting);
-    iou::JSON::WriteJSONUnsigned(ostr, "Descriptor Index", descriptor_index.Index(), formatting, true);
+    iou::JSON::WriteJSONObject(ostr, "Name", name_index, formatting);
+    iou::JSON::WriteJSONObject(ostr, "Descriptor", descriptor_index, formatting, true);
 }
 
 //MethodHandle_info
@@ -276,7 +291,7 @@ void MethodHandle_info::WriteToBinaryStream(std::ostream& ostr) const {
 void MethodHandle_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
     iou::JSON::WriteJSONUnsigned(ostr, "Reference Kind", reference_kind, formatting, true);
-    iou::JSON::WriteJSONUnsigned(ostr, "Reference Index", reference_index.Index(), formatting, true);
+    iou::JSON::WriteJSONObject(ostr, "Reference", reference_index, formatting, true);
 }
 
 //MethodType_info
@@ -296,7 +311,7 @@ void MethodType_info::WriteToBinaryStream(std::ostream& ostr) const {
 }
 void MethodType_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
-    iou::JSON::WriteJSONUnsigned(ostr, "Descriptor Index", descriptor_index.Index(), formatting, true);
+    iou::JSON::WriteJSONObject(ostr, "Descriptor", descriptor_index, formatting, true);
 }
 
 //Dynamic_info
@@ -319,8 +334,8 @@ void Dynamic_info::WriteToBinaryStream(std::ostream& ostr) const {
 }
 void Dynamic_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
-    iou::JSON::WriteJSONUnsigned(ostr, "Bootstrap Method Attr Index", bootstrap_method_attr_index.Index(), formatting, true);
-    iou::JSON::WriteJSONUnsigned(ostr, "NameAndType Index", nameandtype_index.Index(), formatting, true);
+    iou::JSON::WriteJSONObject(ostr, "Bootstrap Method Attr", bootstrap_method_attr_index, formatting, true);
+    iou::JSON::WriteJSONObject(ostr, "NameAndType", nameandtype_index, formatting, true);
 }
 
 //InvokeDynamic_info
@@ -343,8 +358,8 @@ void InvokeDynamic_info::WriteToBinaryStream(std::ostream& ostr) const {
 }
 void InvokeDynamic_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
-    iou::JSON::WriteJSONUnsigned(ostr, "Bootstrap Method Attr Index", bootstrap_method_attr_index.Index(), formatting, true);
-    iou::JSON::WriteJSONUnsigned(ostr, "NameAndType Index", nameandtype_index.Index(), formatting, true);
+    iou::JSON::WriteJSONObject(ostr, "Bootstrap Method Attr", bootstrap_method_attr_index, formatting, true);
+    iou::JSON::WriteJSONObject(ostr, "NameAndType", nameandtype_index, formatting, true);
 }
 
 //Module_info
@@ -364,7 +379,7 @@ void Module_info::WriteToBinaryStream(std::ostream& ostr) const {
 }
 void Module_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
-    iou::JSON::WriteJSONUnsigned(ostr, "Name Index", name_index.Index(), formatting, true);
+    iou::JSON::WriteJSONObject(ostr, "Name", name_index, formatting, true);
 }
 
 //Package_info
@@ -384,7 +399,7 @@ void Package_info::WriteToBinaryStream(std::ostream& ostr) const {
 }
 void Package_info::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
     iou::JSON::WriteJSONString(ostr, "Tag", ConstantPoolMember::GetConstantPoolMemberString(*this), formatting);
-    iou::JSON::WriteJSONUnsigned(ostr, "Name Index", name_index.Index(), formatting, true);
+    iou::JSON::WriteJSONObject(ostr, "Name", name_index, formatting, true);
 }
 /*
 //UnusuableConstantPoolMember
