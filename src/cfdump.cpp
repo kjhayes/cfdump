@@ -29,10 +29,12 @@ int main(int argc, char** argv) {
         std::cout<<"\n}";
     }
 
+    dynamic_cast<cfd::Utf8_info*>(classfile.constant_pool->GetMemberAtIndex(14))->string = "Goodbye World!";
+    dynamic_cast<cfd::Utf8_info*>(classfile.constant_pool->GetMemberAtIndex(25))->string = "NewTestClass";
+
     std::ofstream new_class_file;
     new_class_file.open("NewTestClass.class", std::ios::binary | std::ios::trunc);
     if(new_class_file.is_open()){
-        std::cout<<"OPEN"<<std::endl;
         classfile.WriteToBinaryStream(new_class_file);
     }
     return 0;
