@@ -26,11 +26,7 @@ size_t AttributeTable::Length() const {
 
 void AttributeTable::ResolveIndexReferences(ConstantPool* pool) {
     for(int i = 0; i < attributes_info.size(); i++){
-        std::cout<<"Called"<<std::endl;
-        std::cout<<"NULL ATTR: "<<(attributes_info[i] == nullptr)<<std::endl;
-        std::cout<<"NULL POOL: "<<(pool == nullptr)<<std::endl;
         attributes_info[i]->ResolveIndexReferences(pool);
-        std::cout<<"Returned"<<std::endl;
     }
 }
 
@@ -54,19 +50,14 @@ void AttributeTable::WriteToBinaryStream(std::ostream& ostr) const {
     }
 }
 void AttributeTable::WriteJSON(std::ostream& ostr, iou::JSONFormatting formatting) const {
-    std::cout<<"Begin Writing Attr Table"<<std::endl;
     iou::JSON::WriteJSONUnsigned(ostr, "Attribute Count", attributes_info.size(), formatting, (attributes_info.size() <= 0));
     if(attributes_info.size() > 0) {
         iou::JSON::BeginWriteJSONArray(ostr, "Attributes", formatting);
         for(int i = 0; i < attributes_info.size(); i++){
-            std::cout<<"I: "<<i<<std::endl;
-            std::cout<<"NULL: "<<(attributes_info[i] == nullptr)<<std::endl;
             iou::JSON::WriteJSONArrayObject(ostr, attributes_info[i], formatting, (i == (attributes_info.size() - 1)));
-            std::cout<<"POST"<<std::endl;
         }
         iou::JSON::EndWriteJSONArray(ostr, formatting, true);
     }   
-    std::cout<<"End Writing Attr Table"<<std::endl;
 }
 
 }

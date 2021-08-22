@@ -12,7 +12,6 @@ int main(int argc, char** argv) {
     iou::JSONFormatting format;
     format.spacing = 0;
     format.write_arrays_inline = false;
-    std::cout<<"About To Write JSON"<<std::endl;
     if(argc > 2){
         std::ofstream file(argv[2]);
         if(!file.is_open()){
@@ -27,15 +26,6 @@ int main(int argc, char** argv) {
         std::cout<<"{\n";
         classfile.WriteJSON(std::cout, format);
         std::cout<<"\n}";
-    }
-
-    dynamic_cast<cfd::Utf8_info*>(classfile.constant_pool->GetMemberAtIndex(14))->string = "Goodbye World!";
-    dynamic_cast<cfd::Utf8_info*>(classfile.constant_pool->GetMemberAtIndex(25))->string = "NewTestClass";
-
-    std::ofstream new_class_file;
-    new_class_file.open("NewTestClass.class", std::ios::binary | std::ios::trunc);
-    if(new_class_file.is_open()){
-        classfile.WriteToBinaryStream(new_class_file);
-    }
+    }    
     return 0;
 }
