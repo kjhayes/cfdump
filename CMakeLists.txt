@@ -21,4 +21,4 @@ configure_file(${CMAKE_SOURCE_DIR}/cfdumpConfig.cmake.in ${CMAKE_BINARY_DIR}/cfd
 
 install(TARGETS ${CFDUMP_LIB_NAME} TYPE LIBRARY)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/include TYPE INCLUDE)
-install(FILE ${CMAKE_BINARY_DIR}/cfdumpConfig.cmake DESTINATION ${INSTALL_CMAKE_DIR})
+install(FILES ${CMAKE_BINARY_DIR}/cfdumpConfig.cmake DESTINATION ${INSTALL_CMAKE_DIR})
