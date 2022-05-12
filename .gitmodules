@@ -1,3 +1,0 @@
-[submodule "iostream-util"]
-	path = iostream-util
-	url = git@github.com:kjhayes/iostream-util.git
