@@ -15,5 +15,5 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/src)
 add_executable(${CFDUMP_EXE_NAME} ${CMAKE_SOURCE_DIR}/src/cfdump.cpp)
 target_link_libraries(${CFDUMP_EXE_NAME} ${CFDUMP_LIB_NAME})
 
-install(TARGETS ${CFDUMP_LIB_NAME})
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/include DESTINATION bin)
+install(TARGETS ${CFDUMP_LIB_NAME} TYPE LIBRARY)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/include TYPE INCLUDE)
