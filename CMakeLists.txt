@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CFDUMP_LIB_NAME cfdump)
 set(CFDUMP_EXE_NAME cfd)
 
-set(INSTALL_CMAKE_DIR Cmake)
+set(INSTALL_CMAKE_DIR share)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/iostream-util/include)
@@ -21,4 +21,4 @@ configure_file(${CMAKE_SOURCE_DIR}/cfdumpConfig.cmake.in ${CMAKE_BINARY_DIR}/cfd
 
 install(TARGETS ${CFDUMP_LIB_NAME} TYPE LIBRARY)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/cfdump TYPE INCLUDE)
-install(FILES ${CMAKE_BINARY_DIR}/cfdumpConfig.cmake DESTINATION ${INSTALL_CMAKE_DIR}/share/cfdump)
+install(FILES ${CMAKE_BINARY_DIR}/cfdumpConfig.cmake DESTINATION ${INSTALL_CMAKE_DIR}/cfdump)
