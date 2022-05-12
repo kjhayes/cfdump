@@ -1,0 +1,7 @@
+# cfdump_FOUND
+# cfdump_INCLUDE_DIRS
+# cfdump_LIBRARIES
+
+set(cfdump_FOUND true)
+set(cfdump_LIBRARIES @CFDUMP_LIB_NAME@)
+find_path(cfdump_INCLUDE_DIRS "cfdump/attribute_info.hpp")
