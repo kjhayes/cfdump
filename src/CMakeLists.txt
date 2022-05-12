@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
 
-add_library(${CMAKE_PROJECT_NAME} STATIC
+add_library(${CFDUMP_LIB_NAME} STATIC
     classaccessflags.cpp 
     classfile_info.cpp
     constantpool.cpp 
