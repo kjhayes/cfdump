@@ -20,5 +20,5 @@ target_link_libraries(${CFDUMP_EXE_NAME} ${CFDUMP_LIB_NAME})
 configure_file(${CMAKE_SOURCE_DIR}/cfdumpConfig.cmake.in ${CMAKE_BINARY_DIR}/cfdumpConfig.cmake @ONLY)
 
 install(TARGETS ${CFDUMP_LIB_NAME} TYPE LIBRARY)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/include TYPE INCLUDE)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/cfdump TYPE INCLUDE)
 install(FILES ${CMAKE_BINARY_DIR}/cfdumpConfig.cmake DESTINATION ${INSTALL_CMAKE_DIR})
