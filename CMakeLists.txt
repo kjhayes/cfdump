@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
 
-project(CFDUMP)
+project(cfdump)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -15,5 +15,5 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/src)
 add_executable(${CFDUMP_EXE_NAME} ${CMAKE_SOURCE_DIR}/src/cfdump.cpp)
 target_link_libraries(${CFDUMP_EXE_NAME} ${CFDUMP_LIB_NAME})
 
-install(TARGET ${CFDUMP_LIB_NAME})
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/include)
+install(TARGETS ${CFDUMP_LIB_NAME})
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/include DESTINATION ${CMAKE_BINARY_DIR})
